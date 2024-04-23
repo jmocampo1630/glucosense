@@ -91,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
           date: now,
           color: glucoseLevel.color,
         ));
+        items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {
         showToastWarning("Scan failed. Please try again.", ToastType.error);
