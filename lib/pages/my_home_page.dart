@@ -1,8 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose.dart';
+import 'package:glucosense/services/error.services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -14,7 +18,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Map<String, dynamic>> items = [];
+  final List<GlucoseRecord> items = [];
   final List<GlucoseLevel> metrics = [
     GlucoseLevel(value: 1, color: Colors.yellow),
     GlucoseLevel(value: 2, color: Colors.purple),
@@ -38,12 +42,12 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return Card(
             child: ListTile(
-              title: Text(items[index]['name']!),
-              subtitle: Text(items[index]['description']!),
+              title: Text(items[index].name),
+              subtitle: Text(items[index].description),
               trailing: Container(
                 width: 20,
                 height: 20,
-                color: items[index]['color'],
+                color: items[index].color,
               ),
               onTap: () {
                 // Handle onTap event if needed
@@ -54,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _pickImageFromGallery();
+          _pickImageFromCamera();
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
@@ -64,6 +68,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void generateColor(File? image) async {
     if (image == null) return;
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm a').format(now);
+
     paletteGenerator = await PaletteGenerator.fromImageProvider(
         FileImage(image),
         size: imageSize,
@@ -75,15 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
               : defaultColor
           : defaultColor;
 
-      int newItemCount = items.length + 1;
       GlucoseLevel? glucoseLevel = getTestResult(generatedColor);
       if (glucoseLevel != null) {
         String value = glucoseLevel.value.toString();
-        items.add({
-          "name": "Item $newItemCount",
-          "description": "Glucose Level: $value",
-          "color": glucoseLevel.color
-        });
+        items.add(GlucoseRecord(
+          name: "Glucose Level: $value",
+          description: formattedDate,
+          date: now,
+          color: glucoseLevel.color,
+        ));
+        showToastWarning("Scan successful!", ToastType.success);
+      } else {
+        showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
   }
