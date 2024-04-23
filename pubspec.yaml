@@ -1,5 +1,5 @@
 name: glucosense
-description: "A new Flutter project."
+description: "Saliva-based instant glucose monitoring."
 publish_to: 'none'
 version: 0.1.0
 
@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.6
+  palette_generator: ^0.3.3+3
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:
