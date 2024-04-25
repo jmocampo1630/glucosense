@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose.dart';
 import 'package:glucosense/pages/camera_page.dart';
+import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -59,12 +59,15 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final imagePath = await Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => CameraPage(camera: widget.camera)),
           );
+          if (imagePath != null) {
+            updateRecords(File(imagePath));
+          }
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
@@ -72,67 +75,17 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void generateColor(File? image) async {
-    if (image == null) return;
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd HH:mm a').format(now);
-
-    paletteGenerator = await PaletteGenerator.fromImageProvider(
-        FileImage(image),
-        size: imageSize,
-        region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
+  void updateRecords(File? image) async {
+    GlucoseRecord? record = await generateColor(image);
     setState(() {
-      Color generatedColor = paletteGenerator != null
-          ? paletteGenerator!.dominantColor != null
-              ? paletteGenerator!.dominantColor!.color
-              : defaultColor
-          : defaultColor;
-
-      GlucoseLevel? glucoseLevel = getTestResult(generatedColor);
-      if (glucoseLevel != null) {
-        String value = glucoseLevel.value.toString();
-        items.add(GlucoseRecord(
-          name: "Glucose Level: $value",
-          description: formattedDate,
-          date: now,
-          color: glucoseLevel.color,
-        ));
+      if (record != null) {
+        items.add(record);
         items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {
         showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
-  }
-
-  GlucoseLevel? getTestResult(Color color, {int threshold = 100}) {
-    if (metrics.isEmpty) {
-      return null;
-    }
-    int minDiff = isColorSimilar(color, metrics[0].color, threshold);
-    GlucoseLevel? closestGlucoseLevel = metrics[0];
-
-    for (var metric in metrics) {
-      int diff = isColorSimilar(color, metric.color, threshold);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestGlucoseLevel = metric;
-      }
-    }
-    if (minDiff > threshold) {
-      return null;
-    }
-
-    return closestGlucoseLevel;
-  }
-
-  int isColorSimilar(Color color1, Color color2, int threshold) {
-    int rDiff = (color1.red - color2.red).abs();
-    int gDiff = (color1.green - color2.green).abs();
-    int bDiff = (color1.blue - color2.blue).abs();
-
-    int totalDiff = rDiff + gDiff + bDiff;
-    return totalDiff;
   }
 
   Future _pickImageFromGallery() async {

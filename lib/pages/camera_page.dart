@@ -59,10 +59,7 @@ class _CameraPageState extends State<CameraPage> {
           Positioned(
             bottom: 20.0,
             child: IconButton(
-              onPressed: () async {
-                // final imageFile = await controller.takePicture();
-                // Navigator.pop(context, imageFile.path);
-              },
+              onPressed: () => _takePictureAndNavigateBack(context, controller),
               icon: const Icon(Icons.camera_alt),
               iconSize: 48.0,
               color: Colors.white,
@@ -83,5 +80,16 @@ class _CameraPageState extends State<CameraPage> {
         ],
       ),
     );
+  }
+}
+
+Future<void> _takePictureAndNavigateBack(
+    BuildContext context, CameraController controller) async {
+  try {
+    final imageFile = await controller.takePicture();
+    if (!context.mounted) return;
+    Navigator.pop(context, imageFile.path);
+  } catch (e) {
+    // print('Error capturing image: $e');
   }
 }
