@@ -1,17 +1,19 @@
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose.dart';
+import 'package:glucosense/pages/camera_page.dart';
 import 'package:glucosense/services/error.services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.camera});
   final String title;
+  final CameraDescription camera;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -58,7 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _pickImageFromCamera();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => CameraPage(camera: widget.camera)),
+          );
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
