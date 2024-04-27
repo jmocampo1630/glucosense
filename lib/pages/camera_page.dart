@@ -1,5 +1,11 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:intl/intl.dart';
+
+import 'package:path_provider/path_provider.dart';
 
 class CameraPage extends StatefulWidget {
   /// Default Constructor
@@ -53,8 +59,7 @@ class _CameraPageState extends State<CameraPage> {
         alignment: FractionalOffset.center,
         children: <Widget>[
           Positioned.fill(
-            child:
-                AspectRatio(aspectRatio: 1, child: CameraPreview(controller)),
+            child: CameraPreview(controller),
           ),
           Positioned(
             bottom: 20.0,
@@ -87,8 +92,27 @@ Future<void> _takePictureAndNavigateBack(
     BuildContext context, CameraController controller) async {
   try {
     final imageFile = await controller.takePicture();
+
+    img.Image? image = img.decodeImage(File(imageFile.path).readAsBytesSync());
+    if (image == null) return;
+
+    const imgSize = 200;
+    int x = (image.width - imgSize) ~/ 2;
+    int y = (image.height - imgSize) ~/ 2;
+
+    // Crop the image
+    img.Image croppedImage = img.copyCrop(image, x, y, imgSize, imgSize);
+
+    // Save the cropped image to a temporary file
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    DateTime now = DateTime.now();
+    String timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
+    File tempFile = File('$tempPath/cropped_image$timestamp.png');
+    await tempFile.writeAsBytes(img.encodePng(croppedImage));
+
     if (!context.mounted) return;
-    Navigator.pop(context, imageFile.path);
+    Navigator.pop(context, tempFile.path);
   } catch (e) {
     // print('Error capturing image: $e');
   }
