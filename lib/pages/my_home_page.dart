@@ -7,7 +7,6 @@ import 'package:glucosense/models/glucose.dart';
 import 'package:glucosense/pages/camera_page.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -31,6 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
+  File? _selectedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -39,24 +39,39 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text(items[index].name),
-              subtitle: Text(items[index].description),
-              trailing: Container(
-                width: 20,
-                height: 20,
-                color: items[index].color,
-              ),
-              onTap: () {
-                // Handle onTap event if needed
+      body: Column(
+        children: [
+          if (_selectedImage != null)
+            Expanded(
+                child: Image(
+              image: FileImage(_selectedImage!),
+              width: imageSize.width,
+              height: imageSize.height,
+            )),
+          if (_selectedImage == null) const Text('Please select and image'),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(items[index].name),
+                    subtitle: Text(items[index].description),
+                    trailing: Container(
+                      width: 20,
+                      height: 20,
+                      color: items[index].color,
+                    ),
+                    onTap: () {
+                      // Handle onTap event if needed
+                    },
+                  ),
+                );
               },
             ),
-          );
-        },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -66,6 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 builder: (context) => CameraPage(camera: widget.camera)),
           );
           if (imagePath != null) {
+            setState(() {
+              _selectedImage = File(imagePath);
+            });
             updateRecords(File(imagePath));
           }
         },
@@ -88,17 +106,17 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future _pickImageFromGallery() async {
-    final returnImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (returnImage == null) return;
-    generateColor(File(returnImage.path));
-  }
+  // Future _pickImageFromGallery() async {
+  //   final returnImage =
+  //       await ImagePicker().pickImage(source: ImageSource.gallery);
+  //   if (returnImage == null) return;
+  //   generateColor(File(returnImage.path));
+  // }
 
-  Future _pickImageFromCamera() async {
-    final returnImage =
-        await ImagePicker().pickImage(source: ImageSource.camera);
-    if (returnImage == null) return;
-    generateColor(File(returnImage.path));
-  }
+  // Future _pickImageFromCamera() async {
+  //   final returnImage =
+  //       await ImagePicker().pickImage(source: ImageSource.camera);
+  //   if (returnImage == null) return;
+  //   generateColor(File(returnImage.path));
+  // }
 }
