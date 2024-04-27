@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
+import 'package:intl/intl.dart';
 
 import 'package:path_provider/path_provider.dart';
 
@@ -105,7 +106,9 @@ Future<void> _takePictureAndNavigateBack(
     // Save the cropped image to a temporary file
     Directory tempDir = await getTemporaryDirectory();
     String tempPath = tempDir.path;
-    File tempFile = File('$tempPath/cropped_image.png');
+    DateTime now = DateTime.now();
+    String timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
+    File tempFile = File('$tempPath/cropped_image$timestamp.png');
     await tempFile.writeAsBytes(img.encodePng(croppedImage));
 
     if (!context.mounted) return;

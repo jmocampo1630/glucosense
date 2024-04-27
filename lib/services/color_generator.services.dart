@@ -5,12 +5,13 @@ import 'package:glucosense/models/glucose.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
+const threshold = 150;
 final List<GlucoseLevel> metrics = [
   GlucoseLevel(value: 1, color: Colors.yellow),
   GlucoseLevel(value: 2, color: Colors.purple),
   GlucoseLevel(value: 3, color: Colors.red),
-  GlucoseLevel(value: 4, color: Colors.green),
-  GlucoseLevel(value: 5, color: Colors.blue),
+  // GlucoseLevel(value: 4, color: Colors.green),
+  // GlucoseLevel(value: 5, color: Colors.blue),
 ];
 const imageSize = Size(256, 160);
 PaletteGenerator? paletteGenerator;
@@ -25,8 +26,8 @@ Future<GlucoseRecord?> generateColor(File? image) async {
       size: imageSize,
       region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
   Color generatedColor = paletteGenerator != null
-      ? paletteGenerator!.dominantColor != null
-          ? paletteGenerator!.dominantColor!.color
+      ? paletteGenerator!.vibrantColor != null
+          ? paletteGenerator!.vibrantColor!.color
           : defaultColor
       : defaultColor;
 
@@ -53,7 +54,7 @@ int isColorSimilar(Color color1, Color color2, int threshold) {
   return totalDiff;
 }
 
-GlucoseLevel? getTestResult(Color color, {int threshold = 100}) {
+GlucoseLevel? getTestResult(Color color, {int threshold = threshold}) {
   if (metrics.isEmpty) {
     return null;
   }
