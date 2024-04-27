@@ -34,7 +34,7 @@ Future<int> getDefaultThreshold() async {
   if (threshold != null) {
     return int.parse(threshold);
   } else {
-    return getDefaultThreshold();
+    return defaultThreshold;
   }
 }
 
@@ -49,7 +49,7 @@ Future<int> getDefaultType() async {
   if (type != null) {
     return int.parse(type);
   } else {
-    return getDefaultType();
+    return defaultType;
   }
 }
 
