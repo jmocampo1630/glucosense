@@ -20,17 +20,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<GlucoseRecord> items = [];
-  final List<GlucoseLevel> metrics = [
-    GlucoseLevel(value: 1, color: Colors.yellow),
-    GlucoseLevel(value: 2, color: Colors.purple),
-    GlucoseLevel(value: 3, color: Colors.red),
-    GlucoseLevel(value: 4, color: Colors.green),
-    GlucoseLevel(value: 5, color: Colors.blue),
-  ];
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
-  File? _selectedImage;
+  // File? _selectedImage; // for testing only
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +34,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          if (_selectedImage != null)
-            Expanded(
-                child: Image(
-              image: FileImage(_selectedImage!),
-              width: imageSize.width,
-              height: imageSize.height,
-            )),
-          if (_selectedImage == null) const Text('Please select and image'),
-          const SizedBox(height: 20),
+          // // for testing only
+          // if (_selectedImage != null)
+          //   Expanded(
+          //       child: Image(
+          //     image: FileImage(_selectedImage!),
+          //     width: imageSize.width,
+          //     height: imageSize.height,
+          //   )),
+          // if (_selectedImage == null) const Text('Please select and image'),
+          // const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -81,9 +75,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 builder: (context) => CameraPage(camera: widget.camera)),
           );
           if (imagePath != null) {
-            setState(() {
-              _selectedImage = File(imagePath);
-            });
+            // // for testing only
+            // setState(() {
+            //   _selectedImage = File(imagePath);
+            // });
             updateRecords(File(imagePath));
           }
         },

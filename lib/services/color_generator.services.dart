@@ -5,14 +5,24 @@ import 'package:glucosense/models/glucose.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
-const threshold = 150;
-final List<GlucoseLevel> metrics = [
-  GlucoseLevel(value: 1, color: Colors.yellow),
-  GlucoseLevel(value: 2, color: Colors.purple),
-  GlucoseLevel(value: 3, color: Colors.red),
-  // GlucoseLevel(value: 4, color: Colors.green),
-  // GlucoseLevel(value: 5, color: Colors.blue),
+// default values
+const int threshold = 150;
+const int type = 2;
+List<ColorMetrics> colorRanges = [
+  ColorMetrics(
+      'Yellow',
+      ColorRange(Range(200, 255), Range(0, 100), Range(150, 255)),
+      Colors.yellow,
+      1),
+  ColorMetrics(
+      'Purple',
+      ColorRange(Range(100, 255), Range(100, 255), Range(0, 150)),
+      Colors.purple,
+      2),
+  ColorMetrics('Red', ColorRange(Range(150, 255), Range(0, 100), Range(0, 100)),
+      Colors.red, 3),
 ];
+
 const imageSize = Size(256, 160);
 PaletteGenerator? paletteGenerator;
 Color defaultColor = Colors.white;
@@ -31,7 +41,7 @@ Future<GlucoseRecord?> generateColor(File? image) async {
           : defaultColor
       : defaultColor;
 
-  GlucoseLevel? glucoseLevel = getTestResult(generatedColor);
+  ColorMetrics? glucoseLevel = getTestResult(generatedColor);
   if (glucoseLevel != null) {
     String value = glucoseLevel.value.toString();
     return GlucoseRecord(
@@ -54,14 +64,28 @@ int isColorSimilar(Color color1, Color color2, int threshold) {
   return totalDiff;
 }
 
-GlucoseLevel? getTestResult(Color color, {int threshold = threshold}) {
-  if (metrics.isEmpty) {
+ColorMetrics? getTestResult(Color color) {
+  if (colorRanges.isEmpty) {
     return null;
   }
-  int minDiff = isColorSimilar(color, metrics[0].color, threshold);
-  GlucoseLevel? closestGlucoseLevel = metrics[0];
 
-  for (var metric in metrics) {
+  switch (type) {
+    case 2:
+      ColorMetrics? rangeResult = classifyColor(color);
+      return rangeResult;
+    default:
+      return diffMethod(color);
+  }
+}
+
+ColorMetrics? diffMethod(Color color) {
+  if (colorRanges.isEmpty) {
+    return null;
+  }
+  int minDiff = isColorSimilar(color, colorRanges[0].color, threshold);
+  ColorMetrics? closestGlucoseLevel = colorRanges[0];
+
+  for (var metric in colorRanges) {
     int diff = isColorSimilar(color, metric.color, threshold);
     if (diff < minDiff) {
       minDiff = diff;
@@ -73,4 +97,65 @@ GlucoseLevel? getTestResult(Color color, {int threshold = threshold}) {
   }
 
   return closestGlucoseLevel;
+}
+
+ColorMetrics? classifyColor(Color dominantColor) {
+  int red = dominantColor.red;
+  int green = dominantColor.green;
+  int blue = dominantColor.blue;
+
+  // Check if dominant color falls within any color range
+  double minDistance = double.infinity;
+  ColorMetrics? closestColor;
+
+  for (ColorMetrics colorRange in colorRanges) {
+    if (_isInRange(red, colorRange.range.red.min, colorRange.range.red.max) &&
+        _isInRange(
+            blue, colorRange.range.blue.min, colorRange.range.blue.max) &&
+        _isInRange(
+            green, colorRange.range.green.min, colorRange.range.green.max)) {
+      return colorRange;
+    }
+
+    // Calculate distance between the dominant color and the color range
+    double distance = _calculateDistance(red, green, blue, colorRange);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestColor = colorRange;
+    }
+  }
+
+  // If the closest color is within threshold, return it, else return null
+  if (closestColor == null) return null;
+  return minDistance <= threshold ? closestColor : null;
+}
+
+bool _isInRange(int value, int min, int max) {
+  return value >= min && value <= max;
+}
+
+// ColorCategory _getColorCategory(String categoryName) {
+//   switch (categoryName) {
+//     case 'Purple':
+//       return ColorCategory.Purple;
+//     case 'Yellow':
+//       return ColorCategory.Yellow;
+//     case 'Red':
+//       return ColorCategory.Red;
+//     default:
+//       return ColorCategory.Other;
+//   }
+// }
+
+double _calculateDistance(
+    int red, int green, int blue, ColorMetrics colorRange) {
+  int rangeRed = (colorRange.range.red.min + colorRange.range.red.max) ~/ 2;
+  int rangeGreen =
+      (colorRange.range.green.min + colorRange.range.green.max) ~/ 2;
+  int rangeBlue = (colorRange.range.blue.min + colorRange.range.blue.max) ~/ 2;
+
+  return ((red - rangeRed).abs() +
+          (green - rangeGreen).abs() +
+          (blue - rangeBlue).abs())
+      .toDouble();
 }
