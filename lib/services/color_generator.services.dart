@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:glucosense/models/glucose.dart';
+import 'package:glucosense/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 // default values
-const int threshold = 150;
-const int type = 2;
+int defaultThreshold = 150;
+int defaultType = 2;
 List<ColorMetrics> colorRanges = [
   ColorMetrics(
       'Yellow',
@@ -27,6 +28,36 @@ const imageSize = Size(256, 160);
 PaletteGenerator? paletteGenerator;
 Color defaultColor = Colors.white;
 
+// Getter for defaultThreshold
+Future<int> getDefaultThreshold() async {
+  String? threshold = await getData('threshold');
+  if (threshold != null) {
+    return int.parse(threshold);
+  } else {
+    return getDefaultThreshold();
+  }
+}
+
+// Setter for defaultThreshold
+void setDefaultThreshold(int value) {
+  defaultThreshold = value;
+}
+
+// Getter for defaultType
+Future<int> getDefaultType() async {
+  String? type = await getData('type');
+  if (type != null) {
+    return int.parse(type);
+  } else {
+    return getDefaultType();
+  }
+}
+
+// Setter for defaultType
+void setDefaultType(int value) {
+  defaultType = value;
+}
+
 Future<GlucoseRecord?> generateColor(File? image) async {
   if (image == null) return null;
   DateTime now = DateTime.now();
@@ -41,7 +72,7 @@ Future<GlucoseRecord?> generateColor(File? image) async {
           : defaultColor
       : defaultColor;
 
-  ColorMetrics? glucoseLevel = getTestResult(generatedColor);
+  ColorMetrics? glucoseLevel = await getTestResult(generatedColor);
   if (glucoseLevel != null) {
     String value = glucoseLevel.value.toString();
     return GlucoseRecord(
@@ -64,42 +95,43 @@ int isColorSimilar(Color color1, Color color2, int threshold) {
   return totalDiff;
 }
 
-ColorMetrics? getTestResult(Color color) {
+Future<ColorMetrics?> getTestResult(Color color) async {
   if (colorRanges.isEmpty) {
     return null;
   }
-
-  switch (type) {
+  int dtype = await getDefaultType();
+  switch (dtype) {
     case 2:
-      ColorMetrics? rangeResult = classifyColor(color);
+      ColorMetrics? rangeResult = await classifyColor(color);
       return rangeResult;
     default:
       return diffMethod(color);
   }
 }
 
-ColorMetrics? diffMethod(Color color) {
+Future<ColorMetrics?> diffMethod(Color color) async {
   if (colorRanges.isEmpty) {
     return null;
   }
-  int minDiff = isColorSimilar(color, colorRanges[0].color, threshold);
+  int thold = await getDefaultThreshold();
+  int minDiff = isColorSimilar(color, colorRanges[0].color, thold);
   ColorMetrics? closestGlucoseLevel = colorRanges[0];
 
   for (var metric in colorRanges) {
-    int diff = isColorSimilar(color, metric.color, threshold);
+    int diff = isColorSimilar(color, metric.color, thold);
     if (diff < minDiff) {
       minDiff = diff;
       closestGlucoseLevel = metric;
     }
   }
-  if (minDiff > threshold) {
+  if (minDiff > thold) {
     return null;
   }
 
   return closestGlucoseLevel;
 }
 
-ColorMetrics? classifyColor(Color dominantColor) {
+Future<ColorMetrics?> classifyColor(Color dominantColor) async {
   int red = dominantColor.red;
   int green = dominantColor.green;
   int blue = dominantColor.blue;
@@ -107,6 +139,7 @@ ColorMetrics? classifyColor(Color dominantColor) {
   // Check if dominant color falls within any color range
   double minDistance = double.infinity;
   ColorMetrics? closestColor;
+  int thold = await getDefaultThreshold();
 
   for (ColorMetrics colorRange in colorRanges) {
     if (_isInRange(red, colorRange.range.red.min, colorRange.range.red.max) &&
@@ -127,7 +160,7 @@ ColorMetrics? classifyColor(Color dominantColor) {
 
   // If the closest color is within threshold, return it, else return null
   if (closestColor == null) return null;
-  return minDistance <= threshold ? closestColor : null;
+  return minDistance <= thold ? closestColor : null;
 }
 
 bool _isInRange(int value, int min, int max) {

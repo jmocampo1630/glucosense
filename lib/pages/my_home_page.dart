@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose.dart';
 import 'package:glucosense/pages/camera_page.dart';
+import 'package:glucosense/pages/settings.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
+import 'package:glucosense/services/preferences.services.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -26,11 +28,38 @@ class _MyHomePageState extends State<MyHomePage> {
   // File? _selectedImage; // for testing only
 
   @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    String? thresholdDefault = await getData('threshold');
+    String? typeDefault = await getData('type');
+
+    if (thresholdDefault != null) {
+      setDefaultThreshold(int.parse(thresholdDefault));
+    }
+    if (typeDefault != null) setDefaultType(int.parse(typeDefault));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Settings()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -52,10 +81,32 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ListTile(
                     title: Text(items[index].name),
                     subtitle: Text(items[index].description),
-                    trailing: Container(
+                    leading: Container(
                       width: 20,
                       height: 20,
                       color: items[index].color,
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: Text('Delete'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'detail',
+                          child: Text('Detail'),
+                        ),
+                      ],
+                      onSelected: (String value) {
+                        if (value == 'delete') {
+                          setState(() {
+                            items.remove(items[index]);
+                          });
+                        } else if (value == 'detail') {
+                          // Handle detail action
+                        }
+                      },
                     ),
                     onTap: () {
                       // Handle onTap event if needed
