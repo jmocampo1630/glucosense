@@ -2,11 +2,14 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/my_home_page.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
   final firstCamera = cameras.first;
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   runApp(MyApp(camera: firstCamera));
 }

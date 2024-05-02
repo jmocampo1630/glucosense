@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "187745024264",
+    "project_id": "glucosense-20b20",
+    "storage_bucket": "glucosense-20b20.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187745024264:android:a5fb37efd7fc4c510e14bd",
+        "android_client_info": {
+          "package_name": "com.example.glucosense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQDhzx0o8-uawsHdlbu32Ly4NNNxLMAWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

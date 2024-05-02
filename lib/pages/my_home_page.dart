@@ -3,13 +3,14 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucosense/enums/toast_type.dart';
-import 'package:glucosense/models/glucose.dart';
+import 'package:glucosense/models/glucose_record.dart';
 import 'package:glucosense/pages/camera_page.dart';
 import 'package:glucosense/pages/settings.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
 import 'package:glucosense/services/preferences.services.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:glucosense/services/database.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.camera});
@@ -144,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (record != null) {
         items.add(record);
+        addGlucoseRecord(record);
         items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {

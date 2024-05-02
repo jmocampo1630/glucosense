@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:glucosense/models/glucose_record.dart';
 import 'package:glucosense/models/glucose.dart';
 import 'package:glucosense/services/preferences.services.dart';
 import 'package:intl/intl.dart';
