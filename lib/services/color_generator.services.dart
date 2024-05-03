@@ -77,6 +77,7 @@ Future<GlucoseRecord?> generateColor(File? image) async {
   if (glucoseLevel != null) {
     String value = glucoseLevel.value.toString();
     return GlucoseRecord(
+      id: '',
       name: "Glucose Level: $value",
       description: formattedDate,
       date: now,

@@ -1,15 +1,21 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:glucosense/models/glucose_record.dart';
 
 final DatabaseReference _glucoseRecordsRef =
     FirebaseDatabase.instance.ref().child('glucoseRecords');
 
-Future<void> addGlucoseRecord(GlucoseRecord record) async {
+Future<String?> addGlucoseRecord(GlucoseRecord record) async {
   try {
-    await _glucoseRecordsRef.push().set(record.toJson());
+    DatabaseReference dbRef = _glucoseRecordsRef.push();
+    await dbRef.set(record.toJson());
+    return dbRef.key;
   } catch (e) {
-    print('Error adding glucose record: $e');
+    if (kDebugMode) {
+      print('Error adding glucose record: $e');
+    }
   }
+  return null;
 }
 
 Future<List<GlucoseRecord>> getGlucoseRecords() async {
@@ -18,16 +24,16 @@ Future<List<GlucoseRecord>> getGlucoseRecords() async {
     var event = await _glucoseRecordsRef.once();
     DataSnapshot snapshot = event.snapshot;
 
-    // Cast snapshot.value to Map<dynamic, dynamic>
     Map<dynamic, dynamic>? values = snapshot.value as Map<dynamic, dynamic>?;
-
     if (values != null) {
       values.forEach((key, value) {
-        records.add(GlucoseRecord.fromJson(value));
+        records.add(GlucoseRecord.fromJson(value, key)); // Pass the key (ID)
       });
     }
   } catch (e) {
-    print('Error getting glucose records: $e');
+    if (kDebugMode) {
+      print('Error getting glucose records: $e');
+    }
   }
   return records;
 }
@@ -36,7 +42,9 @@ Future<void> updateGlucoseRecord(String id, GlucoseRecord updatedRecord) async {
   try {
     await _glucoseRecordsRef.child(id).update(updatedRecord.toJson());
   } catch (e) {
-    print('Error updating glucose record: $e');
+    if (kDebugMode) {
+      print('Error updating glucose record: $e');
+    }
   }
 }
 
@@ -44,6 +52,8 @@ Future<void> deleteGlucoseRecord(String id) async {
   try {
     await _glucoseRecordsRef.child(id).remove();
   } catch (e) {
-    print('Error deleting glucose record: $e');
+    if (kDebugMode) {
+      print('Error deleting glucose record: $e');
+    }
   }
 }

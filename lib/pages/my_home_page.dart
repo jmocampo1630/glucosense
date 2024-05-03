@@ -9,6 +9,7 @@ import 'package:glucosense/pages/settings.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
 import 'package:glucosense/services/preferences.services.dart';
+import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:glucosense/services/database.dart';
 
@@ -22,7 +23,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<GlucoseRecord> items = [];
+  List<GlucoseRecord> items = [];
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
@@ -37,6 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> loadData() async {
     String? thresholdDefault = await getData('threshold');
     String? typeDefault = await getData('type');
+    List<GlucoseRecord> records = await getGlucoseRecords();
+    setState(() {
+      items = records;
+    });
 
     if (thresholdDefault != null) {
       setDefaultThreshold(int.parse(thresholdDefault));
@@ -81,7 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Card(
                   child: ListTile(
                     title: Text(items[index].name),
-                    subtitle: Text(items[index].description),
+                    subtitle: Text(DateFormat('yyyy-MM-dd HH:mm a')
+                        .format(items[index].date)),
                     leading: Container(
                       width: 20,
                       height: 20,
@@ -101,6 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                       onSelected: (String value) {
                         if (value == 'delete') {
+                          deleteGlucoseRecord(items[index].id);
                           setState(() {
                             items.remove(items[index]);
                           });
@@ -142,10 +149,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void updateRecords(File? image) async {
     GlucoseRecord? record = await generateColor(image);
+    if (record != null) {
+      String? id = await addGlucoseRecord(record);
+      if (id != null) {
+        record.id = id;
+        items.add(record);
+      }
+    }
     setState(() {
       if (record != null) {
-        items.add(record);
-        addGlucoseRecord(record);
         items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {
