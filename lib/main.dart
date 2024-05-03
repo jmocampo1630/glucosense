@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:glucosense/pages/my_home_page.dart';
 
-import 'pages/my_home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: MyHomePage(title: 'GlucoSense', camera: camera),
+      // home: PatientRecordPage(title: 'GlucoSense', camera: camera),
     );
   }
 }
