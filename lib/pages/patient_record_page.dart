@@ -4,20 +4,26 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose_record.model.dart';
+import 'package:glucosense/models/patient.model.dart';
 import 'package:glucosense/pages/camera_page.dart';
-import 'package:glucosense/pages/settings.dart';
+import 'package:glucosense/pages/settings_page.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
+import 'package:glucosense/services/patient.services.dart';
 import 'package:glucosense/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:glucosense/services/database.dart';
+import 'package:glucosense/services/glucose_record.services.dart';
 
 class PatientRecordPage extends StatefulWidget {
   const PatientRecordPage(
-      {super.key, required this.title, required this.camera});
+      {super.key,
+      required this.title,
+      required this.camera,
+      required this.patientId});
   final String title;
   final CameraDescription camera;
+  final String patientId;
 
   @override
   State<PatientRecordPage> createState() => _PatientRecordPageState();
@@ -28,6 +34,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
+
+  GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
+  PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
   // File? _selectedImage; // for testing only
 
   @override
@@ -39,9 +48,13 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   Future<void> loadData() async {
     String? thresholdDefault = await getData('threshold');
     String? typeDefault = await getData('type');
-    List<GlucoseRecord> records = await getGlucoseRecords();
+    Patient? patient =
+        await patientDatabaseServices.getPatientById(widget.patientId);
+
     setState(() {
-      items = records;
+      if (patient != null) {
+        items = patient.glucoseRecords;
+      }
     });
 
     if (thresholdDefault != null) {
@@ -62,7 +75,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Settings()),
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
           ),
@@ -108,7 +121,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                       ],
                       onSelected: (String value) {
                         if (value == 'delete') {
-                          deleteGlucoseRecord(items[index].id);
+                          glucoseRecordDatabaseServices
+                              .deleteGlucoseRecord(items[index].id);
                           setState(() {
                             items.remove(items[index]);
                           });
@@ -151,7 +165,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   void updateRecords(File? image) async {
     GlucoseRecord? record = await generateColor(image);
     if (record != null) {
-      String? id = await addGlucoseRecord(record);
+      String? id = await patientDatabaseServices.addGlucoseRecordToPatient(
+          widget.patientId, record);
       if (id != null) {
         record.id = id;
         items.add(record);

@@ -40,6 +40,23 @@ class PatientDatabaseServices {
     return records;
   }
 
+  Future<Patient?> getPatientById(String id) async {
+    try {
+      var event = await _patientsRef.child(id).once();
+      DataSnapshot snapshot = event.snapshot;
+      Map<dynamic, dynamic>? values = snapshot.value as Map<dynamic, dynamic>?;
+      if (values != null) {
+        return Patient.fromJson(values, id);
+      }
+      return null; // Return null if no patient found with the given ID
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting patient: $e');
+      }
+      return null; // Return null in case of error
+    }
+  }
+
   Future<void> updatePatient(String id, Patient updatedPatient) async {
     try {
       await _patientsRef.child(id).update(updatedPatient.toJson());
@@ -60,13 +77,37 @@ class PatientDatabaseServices {
     }
   }
 
-  Future<void> addGlucoseRecordToPatient(
+  // Future<void> addGlucoseRecordToPatient(
+  //     String patientId, GlucoseRecord glucoseRecord) async {
+  //   final patientReference = _patientsRef.child(patientId);
+  //   final patientSnapshot = await patientReference.get();
+  //   final patientData = patientSnapshot.value as Map<dynamic, dynamic>;
+  //   List<dynamic> glucoseRecords = patientData['glucose_records'] ?? [];
+  //   glucoseRecords.add(glucoseRecord.toJson());
+  //   await patientReference.update({'glucose_records': glucoseRecords});
+  // }
+
+  Future<String?> addGlucoseRecordToPatient(
       String patientId, GlucoseRecord glucoseRecord) async {
-    final patientReference = _patientsRef.child(patientId);
-    final patientSnapshot = await patientReference.get();
-    final patientData = patientSnapshot.value as Map<dynamic, dynamic>;
-    List<dynamic> glucoseRecords = patientData['glucose_records'] ?? [];
-    glucoseRecords.add(glucoseRecord.toJson());
-    await patientReference.update({'glucose_records': glucoseRecords});
+    try {
+      final patientReference = _patientsRef.child(patientId);
+      final patientSnapshot = await patientReference.get();
+      final patientData = patientSnapshot.value as Map<dynamic, dynamic>;
+
+      // Generate a unique ID for the new glucose record
+      String glucoseRecordId = FirebaseDatabase.instance.ref().push().key ?? '';
+
+      List<dynamic> glucoseRecords = patientData['glucose_records'] ?? [];
+      glucoseRecords.add(glucoseRecord.toJson()..['id'] = glucoseRecordId);
+
+      // Update the patient's glucose records with the new record
+      await patientReference.update({'glucose_records': glucoseRecords});
+
+      // Return the ID of the new glucose record
+      return glucoseRecordId;
+    } catch (e) {
+      print('Error adding glucose record to patient: $e');
+      return null; // Return null in case of error
+    }
   }
 }

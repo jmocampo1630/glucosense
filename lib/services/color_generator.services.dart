@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:glucosense/models/glucose_record.model.dart';
-import 'package:glucosense/models/glucose.dart';
+import 'package:glucosense/models/glucose.model.dart';
 import 'package:glucosense/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';

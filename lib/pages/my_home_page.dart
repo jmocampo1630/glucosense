@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucosense/modals/add_patient_modal.dart';
 import 'package:glucosense/models/patient.model.dart';
+import 'package:glucosense/pages/patient_record_page.dart';
 import 'package:glucosense/services/patient.services.dart';
 import 'package:intl/intl.dart';
 
@@ -53,7 +54,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     subtitle: Text(
                         'Birthday: ${DateFormat('MMMM dd, yyyy').format(patients[index].dateOfBirth)}'),
                     onTap: () {
-                      // Handle onTap event if needed
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PatientRecordPage(
+                                  title: patients[index].name,
+                                  patientId: patients[index].id,
+                                  camera: widget.camera,
+                                )),
+                      );
                     },
                   ),
                 );
