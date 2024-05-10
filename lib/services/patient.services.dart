@@ -97,8 +97,13 @@ class PatientDatabaseServices {
       // Generate a unique ID for the new glucose record
       String glucoseRecordId = FirebaseDatabase.instance.ref().push().key ?? '';
 
-      List<dynamic> glucoseRecords = patientData['glucose_records'] ?? [];
-      glucoseRecords.add(glucoseRecord.toJson()..['id'] = glucoseRecordId);
+      // Ensure glucoseRecords is initialized as a mutable list
+      List<dynamic> glucoseRecords =
+          List.from(patientData['glucose_records'] ?? []);
+
+      // Add the new glucose record with its ID
+      glucoseRecord.id = glucoseRecordId;
+      glucoseRecords.add(glucoseRecord.toJson());
 
       // Update the patient's glucose records with the new record
       await patientReference.update({'glucose_records': glucoseRecords});

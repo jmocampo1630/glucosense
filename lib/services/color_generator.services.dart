@@ -79,6 +79,7 @@ Future<GlucoseRecord?> generateColor(File? image) async {
     return GlucoseRecord(
       id: '',
       name: "Glucose Level: $value",
+      value: glucoseLevel.value,
       description: formattedDate,
       date: now,
       color: glucoseLevel.color,

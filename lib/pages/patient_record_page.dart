@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose_record.model.dart';
 import 'package:glucosense/models/patient.model.dart';
@@ -102,11 +103,34 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                     title: Text(items[index].name),
                     subtitle: Text(DateFormat('yyyy-MM-dd HH:mm a')
                         .format(items[index].date)),
-                    leading: Container(
-                      width: 20,
-                      height: 20,
-                      color: items[index].color,
-                    ),
+                    leading: SizedBox(
+                        width: 60,
+                        height: 50,
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                const SizedBox(height: 5),
+                                Text(
+                                  items[index].value.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const Text(
+                                  'mmol/l',
+                                  style: TextStyle(fontSize: 12.0),
+                                )
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              width: 5,
+                              height: 50,
+                              color: items[index].color,
+                            )
+                          ],
+                        )),
                     trailing: PopupMenuButton<String>(
                       itemBuilder: (BuildContext context) =>
                           <PopupMenuEntry<String>>[

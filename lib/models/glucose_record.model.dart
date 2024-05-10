@@ -2,6 +2,7 @@ import 'dart:ui';
 
 class GlucoseRecord {
   final String name;
+  final int value;
   final String description;
   final DateTime date;
   final Color color;
@@ -10,6 +11,7 @@ class GlucoseRecord {
   GlucoseRecord({
     required this.id,
     required this.name,
+    required this.value,
     required this.description,
     required this.date,
     required this.color,
@@ -19,6 +21,7 @@ class GlucoseRecord {
     return GlucoseRecord(
       id: id,
       name: json['name'],
+      value: json['value'],
       description: json['description'],
       date: DateTime.parse(json['date']).toLocal(),
       color: Color(json['color']),
@@ -28,6 +31,7 @@ class GlucoseRecord {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      'value': value,
       'description': description,
       'date': date.toIso8601String(), // Convert DateTime to ISO 8601 string
       'color': color.value,
