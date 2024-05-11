@@ -7,6 +7,7 @@ import 'package:glucosense/enums/toast_type.dart';
 import 'package:glucosense/models/glucose_record.model.dart';
 import 'package:glucosense/models/patient.model.dart';
 import 'package:glucosense/pages/camera_page.dart';
+import 'package:glucosense/pages/line_chart.dart';
 import 'package:glucosense/pages/settings_page.dart';
 import 'package:glucosense/services/color_generator.services.dart';
 import 'package:glucosense/services/error.services.dart';
@@ -94,6 +95,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
           //   )),
           // if (_selectedImage == null) const Text('Please select and image'),
           // const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          LineChartSample2(),
+          const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -138,10 +142,10 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                           value: 'delete',
                           child: Text('Delete'),
                         ),
-                        const PopupMenuItem<String>(
-                          value: 'detail',
-                          child: Text('Detail'),
-                        ),
+                        // const PopupMenuItem<String>(
+                        //   value: 'detail',
+                        //   child: Text('Detail'),
+                        // ),
                       ],
                       onSelected: (String value) {
                         if (value == 'delete') {
