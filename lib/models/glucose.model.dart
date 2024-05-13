@@ -4,7 +4,7 @@ class ColorMetrics {
   String name;
   ColorRange range;
   final Color color;
-  final int value;
+  final double value;
 
   ColorMetrics(this.name, this.range, this.color, this.value);
 }

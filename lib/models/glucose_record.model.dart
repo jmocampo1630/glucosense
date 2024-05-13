@@ -2,7 +2,7 @@ import 'dart:ui';
 
 class GlucoseRecord {
   final String name;
-  final int value;
+  final double value;
   final String description;
   final DateTime date;
   final Color color;
@@ -21,7 +21,7 @@ class GlucoseRecord {
     return GlucoseRecord(
       id: id,
       name: json['name'],
-      value: json['value'],
+      value: json['value'].toDouble(),
       description: json['description'],
       date: DateTime.parse(json['date']).toLocal(),
       color: Color(json['color']),

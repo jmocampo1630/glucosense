@@ -1,10 +1,12 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:glucosense/models/glucose_record.model.dart';
 import 'package:glucosense/resources/app_colors.dart';
 import 'package:glucosense/resources/gradient_data.dart';
 
 class LineChartSample2 extends StatefulWidget {
-  const LineChartSample2({super.key});
+  const LineChartSample2({super.key, required this.records});
+  final List<GlucoseRecord> records;
 
   @override
   State<LineChartSample2> createState() => _LineChartSample2State();
@@ -62,7 +64,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
-      child: Text(value.toString(), style: style),
+      child: Text(value.toStringAsFixed(0), style: style),
     );
   }
 
@@ -74,7 +76,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
     String text;
     switch (value.toInt() % 2) {
       case 0:
-        text = value.toString();
+        text = value.toStringAsFixed(0);
         break;
       default:
         return Container();
@@ -84,15 +86,11 @@ class _LineChartSample2State extends State<LineChartSample2> {
   }
 
   LineChartData mainData() {
-    const allSpots = [
-      FlSpot(0, 1),
-      FlSpot(2.6, 3),
-      FlSpot(4.9, 5),
-      FlSpot(6.8, 1),
-      FlSpot(8, 1),
-      FlSpot(9.5, 8),
-      FlSpot(11, 1),
-    ];
+    double maxX = 15;
+    double maxY = widget.records.isNotEmpty
+        ? widget.records.map((obj) => obj.value).reduce((a, b) => a > b ? a : b)
+        : 0;
+    List<FlSpot> allSpots = generateSpots(widget.records, maxX);
     final gradient =
         GradientData([0, 0.55, 0.7], gradientColors); // The base gradient
     final newGradient = gradient.getConstrainedGradient(
@@ -116,7 +114,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
             return TouchedSpotIndicatorData(
               const FlLine(
                 color: Color(0xff37434d),
-                strokeWidth: 4,
+                strokeWidth: 2,
               ),
               FlDotData(
                 getDotPainter: (spot, percent, barData, index) {
@@ -158,30 +156,31 @@ class _LineChartSample2State extends State<LineChartSample2> {
           sideTitles: SideTitles(showTitles: false),
         ),
         bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
-          ),
-        ),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 25,
+              interval: 1,
+              getTitlesWidget: bottomTitleWidgets,
+            ),
+            axisNameWidget: const Text('Days')),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             interval: 1,
             getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
+            reservedSize: 25,
           ),
+          axisNameWidget: const Text('mmol/l'),
         ),
       ),
       borderData: FlBorderData(
         show: true,
         border: Border.all(color: const Color(0xff37434d)),
       ),
-      minX: 0,
-      maxX: 11,
+      minX: 1,
+      maxX: maxX,
       minY: 0,
-      maxY: 12,
+      maxY: maxY + 3,
       lineBarsData: [
         LineChartBarData(
           spots: allSpots,
@@ -195,8 +194,9 @@ class _LineChartSample2State extends State<LineChartSample2> {
           ),
           barWidth: 3,
           isStrokeCapRound: true,
+          preventCurveOverShooting: true,
           dotData: FlDotData(
-            show: true,
+            show: false,
             getDotPainter: (spot, percent, barData, index) =>
                 FlDotCirclePainter(
               radius: 5,
@@ -210,5 +210,18 @@ class _LineChartSample2State extends State<LineChartSample2> {
         ),
       ],
     );
+  }
+
+  List<FlSpot> generateSpots(List<GlucoseRecord> records, double maxX) {
+    List<FlSpot> results = [];
+    records.sort((a, b) => a.date.compareTo(b.date));
+    for (var i = 1; i <= maxX; i++) {
+      if (records.length >= i) {
+        results.add(FlSpot(i.toDouble(), records[i - 1].value));
+      } else {
+        results.add(FlSpot(i.toDouble(), 0));
+      }
+    }
+    return results;
   }
 }

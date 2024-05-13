@@ -96,7 +96,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
           // if (_selectedImage == null) const Text('Please select and image'),
           // const SizedBox(height: 20),
           const SizedBox(height: 10),
-          LineChartSample2(),
+          LineChartSample2(records: items),
           const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
