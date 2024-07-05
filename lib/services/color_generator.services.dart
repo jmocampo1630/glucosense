@@ -12,17 +12,77 @@ int defaultThreshold = 150;
 int defaultType = 2;
 List<ColorMetrics> colorRanges = [
   ColorMetrics(
-      'Yellow',
-      ColorRange(Range(200, 255), Range(0, 100), Range(150, 255)),
-      Colors.yellow,
-      1),
+    name: 'Yellowish',
+    range: ColorRange.fromColor(const Color(0xFFFDFDBA)),
+    color: const Color(0xFFFDFDBA),
+    value: 0.15,
+  ),
   ColorMetrics(
-      'Purple',
-      ColorRange(Range(100, 255), Range(100, 255), Range(0, 150)),
-      Colors.purple,
-      2),
-  ColorMetrics('Red', ColorRange(Range(150, 255), Range(0, 100), Range(0, 100)),
-      Colors.red, 3),
+    name: 'Light Beige',
+    range: ColorRange.fromColor(const Color(0xFFF8EAB2)),
+    color: const Color(0xFFF8EAB2),
+    value: 0.31,
+  ),
+  ColorMetrics(
+    name: 'Pale Apricot',
+    range: ColorRange.fromColor(const Color(0xFFF3D8AA)),
+    color: const Color(0xFFF3D8AA),
+    value: 0.61,
+  ),
+  ColorMetrics(
+    name: 'Soft Peach',
+    range: ColorRange.fromColor(const Color(0xFFEEC5A3)),
+    color: const Color(0xFFEEC5A3),
+    value: 1.22,
+  ),
+  ColorMetrics(
+    name: 'Blush Pink',
+    range: ColorRange.fromColor(const Color(0xFFE9B29B)),
+    color: const Color(0xFFE9B29B),
+    value: 2.44,
+  ),
+  ColorMetrics(
+    name: 'Salmon',
+    range: ColorRange.fromColor(const Color(0xFFE4A093)),
+    color: const Color(0xFFE4A093),
+    value: 4.88,
+  ),
+  ColorMetrics(
+    name: 'Coral',
+    range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
+    color: const Color(0xFFDF8D8B),
+    value: 9.77,
+  ),
+  ColorMetrics(
+    name: 'Rose',
+    range: ColorRange.fromColor(const Color(0xFFDA7B83)),
+    color: const Color(0xFFDA7B83),
+    value: 19.53,
+  ),
+  ColorMetrics(
+    name: 'Mauve',
+    range: ColorRange.fromColor(const Color(0xFFD5687B)),
+    color: const Color(0xFFD5687B),
+    value: 39.06,
+  ),
+  ColorMetrics(
+    name: 'Raspberry',
+    range: ColorRange.fromColor(const Color(0xFFD05574)),
+    color: const Color(0xFFD05574),
+    value: 78.13,
+  ),
+  ColorMetrics(
+    name: 'Ruby Red',
+    range: ColorRange.fromColor(const Color(0xFFCB436E)),
+    color: const Color(0xFFCB436E),
+    value: 156.25,
+  ),
+  ColorMetrics(
+    name: 'Fuchsia',
+    range: ColorRange.fromColor(const Color(0xFFC63064)),
+    color: const Color(0xFFC63064),
+    value: 312.5,
+  ),
 ];
 
 const imageSize = Size(256, 160);
