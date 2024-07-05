@@ -1,4 +1,4 @@
-name: glucosense
+name: glucolook
 description: "Saliva-based instant glucose monitoring."
 publish_to: 'none'
 version: 0.1.0

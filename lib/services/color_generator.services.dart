@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:glucosense/models/glucose_record.model.dart';
-import 'package:glucosense/models/glucose.model.dart';
-import 'package:glucosense/services/preferences.services.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/models/glucose.model.dart';
+import 'package:glucolook/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 
@@ -62,7 +62,7 @@ void setDefaultType(int value) {
 Future<GlucoseRecord?> generateColor(File? image) async {
   if (image == null) return null;
   DateTime now = DateTime.now();
-  String formattedDate = DateFormat('yyyy-MM-dd HH:mm a').format(now);
+  String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(now);
 
   paletteGenerator = await PaletteGenerator.fromImageProvider(FileImage(image),
       size: imageSize,

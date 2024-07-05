@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:glucosense/models/glucose_record.model.dart';
-import 'package:glucosense/resources/app_colors.dart';
-import 'package:glucosense/resources/gradient_data.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/resources/app_colors.dart';
+import 'package:glucolook/resources/gradient_data.dart';
 
 class LineChartSample2 extends StatefulWidget {
   const LineChartSample2({super.key, required this.records});
@@ -170,7 +170,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
             getTitlesWidget: leftTitleWidgets,
             reservedSize: 25,
           ),
-          axisNameWidget: const Text('mmol/l'),
+          axisNameWidget: const Text('mg/dL'),
         ),
       ),
       borderData: FlBorderData(

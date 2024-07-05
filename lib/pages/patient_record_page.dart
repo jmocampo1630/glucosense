@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:glucosense/enums/toast_type.dart';
-import 'package:glucosense/models/glucose_record.model.dart';
-import 'package:glucosense/models/patient.model.dart';
-import 'package:glucosense/pages/camera_page.dart';
-import 'package:glucosense/pages/line_chart.dart';
-import 'package:glucosense/pages/settings_page.dart';
-import 'package:glucosense/services/color_generator.services.dart';
-import 'package:glucosense/services/error.services.dart';
-import 'package:glucosense/services/patient.services.dart';
-import 'package:glucosense/services/preferences.services.dart';
+import 'package:glucolook/enums/toast_type.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/pages/camera_page.dart';
+import 'package:glucolook/pages/line_chart.dart';
+import 'package:glucolook/pages/settings_page.dart';
+import 'package:glucolook/services/color_generator.services.dart';
+import 'package:glucolook/services/error.services.dart';
+import 'package:glucolook/services/patient.services.dart';
+import 'package:glucolook/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:glucosense/services/glucose_record.services.dart';
+import 'package:glucolook/services/glucose_record.services.dart';
 
 class PatientRecordPage extends StatefulWidget {
   const PatientRecordPage(
@@ -105,7 +105,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                 return Card(
                   child: ListTile(
                     title: Text(items[index].name),
-                    subtitle: Text(DateFormat('yyyy-MM-dd HH:mm a')
+                    subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
                         .format(items[index].date)),
                     leading: SizedBox(
                         width: 60,
@@ -122,7 +122,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 const Text(
-                                  'mmol/l',
+                                  'mg/dL',
                                   style: TextStyle(fontSize: 12.0),
                                 )
                               ],

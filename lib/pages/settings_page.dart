@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:glucosense/enums/toast_type.dart';
-import 'package:glucosense/models/settings.model.dart';
-import 'package:glucosense/services/color_generator.services.dart';
-import 'package:glucosense/services/error.services.dart';
-import 'package:glucosense/services/preferences.services.dart';
+import 'package:glucolook/enums/toast_type.dart';
+import 'package:glucolook/models/settings.model.dart';
+import 'package:glucolook/services/color_generator.services.dart';
+import 'package:glucolook/services/error.services.dart';
+import 'package:glucolook/services/preferences.services.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

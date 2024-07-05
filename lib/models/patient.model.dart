@@ -1,4 +1,4 @@
-import 'package:glucosense/models/glucose_record.model.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
 
 class Patient {
   String id;

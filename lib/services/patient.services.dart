@@ -1,7 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:glucosense/models/glucose_record.model.dart';
-import 'package:glucosense/models/patient.model.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/models/patient.model.dart';
 
 class PatientDatabaseServices {
   final DatabaseReference _patientsRef =

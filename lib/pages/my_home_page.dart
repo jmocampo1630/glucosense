@@ -1,9 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:glucosense/modals/add_patient_modal.dart';
-import 'package:glucosense/models/patient.model.dart';
-import 'package:glucosense/pages/patient_record_page.dart';
-import 'package:glucosense/services/patient.services.dart';
+import 'package:glucolook/modals/add_patient_modal.dart';
+import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/pages/patient_record_page.dart';
+import 'package:glucolook/services/patient.services.dart';
 import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {

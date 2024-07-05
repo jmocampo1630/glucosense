@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:glucosense/models/patient.model.dart';
-import 'package:glucosense/services/patient.services.dart';
+import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/services/patient.services.dart';
 
 class AddPatientDialog extends StatefulWidget {
   const AddPatientDialog({super.key});
