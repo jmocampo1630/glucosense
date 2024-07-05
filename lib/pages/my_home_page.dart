@@ -1,15 +1,10 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:glucosense/enums/toast_type.dart';
-import 'package:glucosense/models/glucose.dart';
-import 'package:glucosense/pages/camera_page.dart';
-import 'package:glucosense/pages/settings.dart';
-import 'package:glucosense/services/color_generator.services.dart';
-import 'package:glucosense/services/error.services.dart';
-import 'package:glucosense/services/preferences.services.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:glucolook/modals/add_patient_modal.dart';
+import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/pages/patient_record_page.dart';
+import 'package:glucolook/services/patient.services.dart';
+import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.camera});
@@ -21,27 +16,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<GlucoseRecord> items = [];
-  final imageSize = const Size(256, 160);
-  PaletteGenerator? paletteGenerator;
-  Color defaultColor = Colors.white;
-  // File? _selectedImage; // for testing only
-
-  @override
-  void initState() {
-    super.initState();
-    loadData();
-  }
-
-  Future<void> loadData() async {
-    String? thresholdDefault = await getData('threshold');
-    String? typeDefault = await getData('type');
-
-    if (thresholdDefault != null) {
-      setDefaultThreshold(int.parse(thresholdDefault));
-    }
-    if (typeDefault != null) setDefaultType(int.parse(typeDefault));
-  }
+  PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
+  List<Patient> patients = [];
 
   @override
   Widget build(BuildContext context) {
@@ -49,17 +25,6 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Settings()),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -75,41 +40,29 @@ class _MyHomePageState extends State<MyHomePage> {
           // const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
-              itemCount: items.length,
+              itemCount: patients.length,
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    title: Text(items[index].name),
-                    subtitle: Text(items[index].description),
-                    leading: Container(
-                      width: 20,
-                      height: 20,
-                      color: items[index].color,
+                    leading: CircleAvatar(
+                      child: Text(
+                        _getInitials(patients[index].name),
+                        style: const TextStyle(fontSize: 20),
+                      ),
                     ),
-                    trailing: PopupMenuButton<String>(
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Text('Delete'),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'detail',
-                          child: Text('Detail'),
-                        ),
-                      ],
-                      onSelected: (String value) {
-                        if (value == 'delete') {
-                          setState(() {
-                            items.remove(items[index]);
-                          });
-                        } else if (value == 'detail') {
-                          // Handle detail action
-                        }
-                      },
-                    ),
+                    title: Text('Name: ${patients[index].name}'),
+                    subtitle: Text(
+                        'Birthday: ${DateFormat('MMMM dd, yyyy').format(patients[index].dateOfBirth)}'),
                     onTap: () {
-                      // Handle onTap event if needed
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PatientRecordPage(
+                                  title: patients[index].name,
+                                  patientId: patients[index].id,
+                                  camera: widget.camera,
+                                )),
+                      );
                     },
                   ),
                 );
@@ -120,49 +73,41 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final imagePath = await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => CameraPage(camera: widget.camera)),
-          );
-          if (imagePath != null) {
-            // // for testing only
-            // setState(() {
-            //   _selectedImage = File(imagePath);
-            // });
-            updateRecords(File(imagePath));
-          }
+          await showDialog<void>(
+              context: context, builder: (context) => _buildFormModal(context));
+          _loadPatients();
         },
-        tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void updateRecords(File? image) async {
-    GlucoseRecord? record = await generateColor(image);
+  @override
+  void initState() {
+    super.initState();
+    _loadPatients(); // Load patients when the page initializes
+  }
+
+  // Method to load patients from Firebase
+  void _loadPatients() async {
+    List<Patient> loadedPatients = await patientDatabaseServices.getPatients();
     setState(() {
-      if (record != null) {
-        items.add(record);
-        items.sort((a, b) => b.date.compareTo(a.date));
-        showToastWarning("Scan successful!", ToastType.success);
-      } else {
-        showToastWarning("Scan failed. Please try again.", ToastType.error);
-      }
+      patients = loadedPatients;
     });
   }
 
-  // Future _pickImageFromGallery() async {
-  //   final returnImage =
-  //       await ImagePicker().pickImage(source: ImageSource.gallery);
-  //   if (returnImage == null) return;
-  //   generateColor(File(returnImage.path));
-  // }
+  String _getInitials(String name) {
+    List<String> nameSplit = name.split(' ');
+    String initials = '';
+    int numWords =
+        nameSplit.length > 1 ? 2 : 1; // Take first two words as initials
+    for (int i = 0; i < numWords; i++) {
+      initials += nameSplit[i][0];
+    }
+    return initials.toUpperCase();
+  }
 
-  // Future _pickImageFromCamera() async {
-  //   final returnImage =
-  //       await ImagePicker().pickImage(source: ImageSource.camera);
-  //   if (returnImage == null) return;
-  //   generateColor(File(returnImage.path));
-  // }
+  Widget _buildFormModal(BuildContext context) {
+    return const AddPatientDialog();
+  }
 }
