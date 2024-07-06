@@ -35,6 +35,7 @@ class GlucoseRecord {
       'description': description,
       'date': date.toIso8601String(), // Convert DateTime to ISO 8601 string
       'color': color.value,
+      'id': id,
     };
   }
 }
