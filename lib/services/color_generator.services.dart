@@ -128,8 +128,8 @@ Future<GlucoseRecord?> generateColor(File? image) async {
       size: imageSize,
       region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
   Color generatedColor = paletteGenerator != null
-      ? paletteGenerator!.vibrantColor != null
-          ? paletteGenerator!.vibrantColor!.color
+      ? paletteGenerator!.dominantColor != null
+          ? paletteGenerator!.dominantColor!.color
           : defaultColor
       : defaultColor;
 

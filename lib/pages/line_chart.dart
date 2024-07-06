@@ -4,15 +4,15 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/resources/app_colors.dart';
 import 'package:glucolook/resources/gradient_data.dart';
 
-class LineChartSample2 extends StatefulWidget {
-  const LineChartSample2({super.key, required this.records});
+class LineChartGraph extends StatefulWidget {
+  const LineChartGraph({super.key, required this.records});
   final List<GlucoseRecord> records;
 
   @override
-  State<LineChartSample2> createState() => _LineChartSample2State();
+  State<LineChartGraph> createState() => _LineChartGraphState();
 }
 
-class _LineChartSample2State extends State<LineChartSample2> {
+class _LineChartGraphState extends State<LineChartGraph> {
   List<Color> gradientColors = [
     AppColors.contentColorBlue,
     AppColors.contentColorYellow,
