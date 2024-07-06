@@ -148,8 +148,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                       ],
                       onSelected: (String value) {
                         if (value == 'delete') {
-                          glucoseRecordDatabaseServices
-                              .deleteGlucoseRecord(items[index].id);
+                          glucoseRecordDatabaseServices.deleteGlucoseRecord(
+                              widget.patientId, items[index].id);
                           setState(() {
                             items.remove(items[index]);
                           });

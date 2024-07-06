@@ -77,16 +77,6 @@ class PatientDatabaseServices {
     }
   }
 
-  // Future<void> addGlucoseRecordToPatient(
-  //     String patientId, GlucoseRecord glucoseRecord) async {
-  //   final patientReference = _patientsRef.child(patientId);
-  //   final patientSnapshot = await patientReference.get();
-  //   final patientData = patientSnapshot.value as Map<dynamic, dynamic>;
-  //   List<dynamic> glucoseRecords = patientData['glucose_records'] ?? [];
-  //   glucoseRecords.add(glucoseRecord.toJson());
-  //   await patientReference.update({'glucose_records': glucoseRecords});
-  // }
-
   Future<String?> addGlucoseRecordToPatient(
       String patientId, GlucoseRecord glucoseRecord) async {
     try {
@@ -97,13 +87,15 @@ class PatientDatabaseServices {
       // Generate a unique ID for the new glucose record
       String glucoseRecordId = FirebaseDatabase.instance.ref().push().key ?? '';
 
-      // Ensure glucoseRecords is initialized as a mutable list
-      List<dynamic> glucoseRecords =
-          List.from(patientData['glucose_records'] ?? []);
-
       // Add the new glucose record with its ID
       glucoseRecord.id = glucoseRecordId;
-      glucoseRecords.add(glucoseRecord.toJson());
+      Map<String, dynamic> glucoseRecordData = glucoseRecord.toJson();
+
+      // Ensure glucoseRecords is initialized as a mutable map
+      Map<String, dynamic> glucoseRecords =
+          Map<String, dynamic>.from(patientData['glucose_records'] ?? {});
+
+      glucoseRecords[glucoseRecordId] = glucoseRecordData;
 
       // Update the patient's glucose records with the new record
       await patientReference.update({'glucose_records': glucoseRecords});

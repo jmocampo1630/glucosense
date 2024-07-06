@@ -18,8 +18,8 @@ class Patient {
   factory Patient.fromJson(Map<dynamic, dynamic> json, String id) {
     List<GlucoseRecord> glucoseRecords = [];
     if (json['glucose_records'] != null) {
-      json['glucose_records'].forEach((recordJson) {
-        GlucoseRecord record = GlucoseRecord.fromJson(recordJson, '');
+      (json['glucose_records'] as Map).forEach((key, value) {
+        GlucoseRecord record = GlucoseRecord.fromJson(value, key);
         glucoseRecords.add(record);
       });
     }
