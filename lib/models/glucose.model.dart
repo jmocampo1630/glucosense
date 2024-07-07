@@ -5,12 +5,14 @@ class ColorMetrics {
   final ColorRange range;
   final Color color;
   final double value;
+  final List<String> recommendations;
 
   ColorMetrics({
     required this.name,
     required this.range,
     required this.color,
     required this.value,
+    required this.recommendations,
   });
 }
 
