@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/enums/toast_type.dart';
+import 'package:glucolook/modals/scan_glucose_record_modal.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
@@ -94,9 +95,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
           //   )),
           // if (_selectedImage == null) const Text('Please select and image'),
           // const SizedBox(height: 20),
-          const SizedBox(height: 10),
-          LineChartSample2(records: items),
-          const SizedBox(height: 20),
+          // const SizedBox(height: 10),
+          // LineChartGraph(records: items),
+          // const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -107,24 +108,27 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                     subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
                         .format(items[index].date)),
                     leading: SizedBox(
-                        width: 60,
+                        width: 80,
                         height: 50,
                         child: Row(
                           children: [
-                            Column(
-                              children: [
-                                const SizedBox(height: 5),
-                                Text(
-                                  items[index].value.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const Text(
-                                  'mg/dL',
-                                  style: TextStyle(fontSize: 12.0),
-                                )
-                              ],
+                            SizedBox(
+                              width: 60,
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    items[index].value.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const Text(
+                                    'mg/dL',
+                                    style: TextStyle(fontSize: 12.0),
+                                  )
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Container(
@@ -170,28 +174,42 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final imagePath = await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => CameraPage(camera: widget.camera)),
-          );
-          if (imagePath != null) {
-            // // for testing only
-            // setState(() {
-            //   _selectedImage = File(imagePath);
-            // });
-            updateRecords(File(imagePath));
-          }
+          openCamera();
         },
-        tooltip: 'Increment',
+        tooltip: 'Scan',
         child: const Icon(Icons.add),
       ),
     );
   }
 
+  Future<void> openCamera() async {
+    final imagePath = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CameraPage(camera: widget.camera)),
+    );
+    if (imagePath != null) {
+      // // for testing only
+      // setState(() {
+      //   _selectedImage = File(imagePath);
+      // });
+      updateRecords(File(imagePath));
+    }
+  }
+
   void updateRecords(File? image) async {
     GlucoseRecord? record = await generateColor(image);
     if (record != null) {
+      if (!mounted) return;
+      final isSave = await showDialog<bool>(
+          context: context,
+          builder: (context) => ScanGlucoseRecordModal(glucoseRecord: record));
+
+      if (!(isSave != null && isSave)) {
+        openCamera();
+        return;
+      }
+
       String? id = await patientDatabaseServices.addGlucoseRecordToPatient(
           widget.patientId, record);
       if (id != null) {

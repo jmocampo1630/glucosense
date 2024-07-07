@@ -4,15 +4,15 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/resources/app_colors.dart';
 import 'package:glucolook/resources/gradient_data.dart';
 
-class LineChartSample2 extends StatefulWidget {
-  const LineChartSample2({super.key, required this.records});
+class LineChartGraph extends StatefulWidget {
+  const LineChartGraph({super.key, required this.records});
   final List<GlucoseRecord> records;
 
   @override
-  State<LineChartSample2> createState() => _LineChartSample2State();
+  State<LineChartGraph> createState() => _LineChartGraphState();
 }
 
-class _LineChartSample2State extends State<LineChartSample2> {
+class _LineChartGraphState extends State<LineChartGraph> {
   List<Color> gradientColors = [
     AppColors.contentColorBlue,
     AppColors.contentColorYellow,
@@ -71,7 +71,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
   Widget leftTitleWidgets(double value, TitleMeta meta) {
     const style = TextStyle(
       fontWeight: FontWeight.bold,
-      fontSize: 15,
+      fontSize: 12,
     );
     String text;
     switch (value.toInt() % 2) {
@@ -133,7 +133,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
         show: true,
         drawHorizontalLine: true,
         verticalInterval: 2,
-        horizontalInterval: 2,
+        horizontalInterval: (maxY / 10).ceil() + 1,
         getDrawingVerticalLine: (value) {
           return const FlLine(
             color: Color(0xff37434d),
@@ -166,9 +166,9 @@ class _LineChartSample2State extends State<LineChartSample2> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 1,
+            interval: (maxY / 10).ceil() + 1,
             getTitlesWidget: leftTitleWidgets,
-            reservedSize: 25,
+            reservedSize: 30,
           ),
           axisNameWidget: const Text('mg/dL'),
         ),
@@ -180,7 +180,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
       minX: 1,
       maxX: maxX,
       minY: 0,
-      maxY: maxY + 3,
+      maxY: maxY + (maxY * 0.1),
       lineBarsData: [
         LineChartBarData(
           spots: allSpots,
