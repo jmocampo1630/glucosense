@@ -60,13 +60,13 @@ class AddPatientDialogState extends State<AddPatientDialog> {
                       : 'Select date',
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const Text(
                     'Select your gender:',
-                    style: TextStyle(fontSize: 16.0),
+                    style: TextStyle(fontSize: 14.0),
                   ),
                   RadioListTile(
                     title: const Text('Male'),
@@ -92,7 +92,7 @@ class AddPatientDialogState extends State<AddPatientDialog> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[

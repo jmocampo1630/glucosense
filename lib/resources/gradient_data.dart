@@ -103,4 +103,29 @@ class GraphHelper {
     }
     return minY;
   }
+
+  double getIntervalSize(double maxY, int numberOfRows) {
+    double rawIntervalSize = maxY / numberOfRows;
+    List<double> possibleIntervals = [
+      1,
+      5,
+      10,
+      20,
+      30,
+      50,
+      100,
+      200,
+      300,
+      500,
+      1000
+    ];
+
+    for (double interval in possibleIntervals) {
+      if (interval >= rawIntervalSize) {
+        return interval;
+      }
+    }
+
+    return possibleIntervals.last; // fallback if maxY is extremely large
+  }
 }

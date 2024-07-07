@@ -107,24 +107,27 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                     subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
                         .format(items[index].date)),
                     leading: SizedBox(
-                        width: 60,
+                        width: 80,
                         height: 50,
                         child: Row(
                           children: [
-                            Column(
-                              children: [
-                                const SizedBox(height: 5),
-                                Text(
-                                  items[index].value.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const Text(
-                                  'mg/dL',
-                                  style: TextStyle(fontSize: 12.0),
-                                )
-                              ],
+                            SizedBox(
+                              width: 60,
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    items[index].value.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const Text(
+                                    'mg/dL',
+                                    style: TextStyle(fontSize: 12.0),
+                                  )
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Container(
