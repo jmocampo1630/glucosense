@@ -1,10 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
-import 'package:glucolook/services/color_generator.services.dart';
 
 class ScanGlucoseRecordModal extends StatefulWidget {
-  const ScanGlucoseRecordModal({super.key, required this.glucoseRecord});
+  const ScanGlucoseRecordModal(
+      {super.key, required this.glucoseRecord, required this.image});
   final GlucoseRecord glucoseRecord;
+  final File image;
 
   @override
   State<ScanGlucoseRecordModal> createState() => _ScanGlucoseRecordModalState();
@@ -20,20 +23,37 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Container(
+          SizedBox(
             width: 100,
             height: 100,
-            color: widget.glucoseRecord.color,
+            child: Expanded(
+                child: Image(
+              image: FileImage(widget.image),
+              width: 100,
+              height: 100,
+            )),
           ),
+          const SizedBox(height: 10),
           const Text(
             'Glucose Level:',
-            style: TextStyle(fontSize: 16.0),
+            style: TextStyle(fontSize: 18.0),
           ),
-          Text('${widget.glucoseRecord.value} mg/dL',
-              style:
-                  const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                color: widget.glucoseRecord.color,
+              ),
+              const SizedBox(width: 5),
+              Text('${widget.glucoseRecord.value} mg/dL',
+                  style: const TextStyle(
+                      fontSize: 20.0, fontWeight: FontWeight.bold)),
+            ],
+          ),
           Text(widget.glucoseRecord.name,
-              style: const TextStyle(fontSize: 16.0)),
+              style: const TextStyle(fontSize: 18.0)),
         ],
       ),
       actions: <Widget>[

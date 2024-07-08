@@ -4,10 +4,12 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/enums/toast_type.dart';
 import 'package:glucolook/modals/scan_glucose_record_modal.dart';
+import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/line_chart.dart';
+import 'package:glucolook/pages/my_home_page.dart';
 import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
@@ -72,6 +74,12 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: () {
+              deleteDialog(context);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -198,12 +206,16 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   }
 
   void updateRecords(File? image) async {
+    if (image == null) return;
     GlucoseRecord? record = await generateColor(image);
     if (record != null) {
       if (!mounted) return;
       final isSave = await showDialog<bool>(
           context: context,
-          builder: (context) => ScanGlucoseRecordModal(glucoseRecord: record));
+          builder: (context) => ScanGlucoseRecordModal(
+                glucoseRecord: record,
+                image: image,
+              ));
 
       if (!(isSave != null && isSave)) {
         openCamera();
@@ -225,6 +237,33 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
+  }
+
+  void deleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SubmitCancelDialog(
+          title: 'Delete Patient',
+          content: 'Are you sure you want to delete this patient?',
+          onSubmit: () {
+            patientDatabaseServices.deletePatient(widget.patientId);
+            Navigator.of(context).pop();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      MyHomePage(title: widget.title, camera: widget.camera)),
+            );
+          },
+          onCancel: () {
+            // Handle cancel action
+            Navigator.of(context).pop();
+          },
+          submitText: 'Proceed',
+        );
+      },
+    );
   }
 
   // Future _pickImageFromGallery() async {
