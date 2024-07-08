@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
@@ -215,8 +216,29 @@ Future<ColorMetrics?> getTestResult(Color color) async {
       ColorMetrics? rangeResult = await classifyColor(color);
       return rangeResult;
     default:
-      return diffMethod(color);
+      return findClosestColor(color);
   }
+}
+
+double calculateDistance(Color c1, Color c2) {
+  return sqrt(pow(c1.red - c2.red, 2) +
+      pow(c1.green - c2.green, 2) +
+      pow(c1.blue - c2.blue, 2));
+}
+
+ColorMetrics findClosestColor(Color targetColor) {
+  double minDistance = double.infinity;
+  ColorMetrics? closestColor;
+
+  for (var metric in colorRanges) {
+    double distance = calculateDistance(targetColor, metric.color);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestColor = metric;
+    }
+  }
+
+  return closestColor!;
 }
 
 Future<ColorMetrics?> diffMethod(Color color) async {

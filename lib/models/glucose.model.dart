@@ -28,7 +28,7 @@ class ColorRange {
   });
 
   // Factory constructor to compute ranges automatically
-  factory ColorRange.fromColor(Color color, {int tolerance = 50}) {
+  factory ColorRange.fromColor(Color color, {int tolerance = 10}) {
     int red = color.red;
     int green = color.green;
     int blue = color.blue;
@@ -45,6 +45,8 @@ class Range {
   final int min;
   final int max;
 
-  Range(this.min, this.max)
-      : assert(min <= max, 'Min should be less than or equal to max');
+  Range(int min, int max)
+      : min = min.clamp(0, 255),
+        max = max.clamp(0, 255),
+        assert(min <= max, 'Min should be less than or equal to max');
 }
