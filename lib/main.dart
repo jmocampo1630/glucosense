@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'GlucoLook',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF37B5B6)),
         useMaterial3: true,
       ),
       home: MyHomePage(title: 'GlucoLook', camera: camera),
