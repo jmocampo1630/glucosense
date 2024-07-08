@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/glucose.model.dart';
 import 'package:glucolook/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:image/image.dart' as img;
 
 // default values
 int defaultThreshold = 150;
@@ -173,14 +176,16 @@ Future<GlucoseRecord?> generateColor(File? image) async {
   DateTime now = DateTime.now();
   String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(now);
 
-  paletteGenerator = await PaletteGenerator.fromImageProvider(FileImage(image),
-      size: imageSize,
-      region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
-  Color generatedColor = paletteGenerator != null
-      ? paletteGenerator!.dominantColor != null
-          ? paletteGenerator!.dominantColor!.color
-          : defaultColor
-      : defaultColor;
+  // paletteGenerator = await PaletteGenerator.fromImageProvider(FileImage(image),
+  //     size: imageSize,
+  //     region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
+  // Color generatedColor = paletteGenerator != null
+  //     ? paletteGenerator!.dominantColor != null
+  //         ? paletteGenerator!.dominantColor!.color
+  //         : defaultColor
+  //     : defaultColor;
+
+  Color generatedColor = await mixImageColors(image);
 
   ColorMetrics? glucoseLevel = await getTestResult(generatedColor);
   if (glucoseLevel != null) {
@@ -195,6 +200,36 @@ Future<GlucoseRecord?> generateColor(File? image) async {
   } else {
     return null;
   }
+}
+
+Future<Color> mixImageColors(File imageFile) async {
+  // Read image file
+  Uint8List bytes = await imageFile.readAsBytes();
+  img.Image image = img.decodeImage(bytes) as img.Image;
+
+  // Initialize sum of R, G, B values
+  int sumR = 0;
+  int sumG = 0;
+  int sumB = 0;
+
+  // Iterate through each pixel and sum up RGB values
+  for (int y = 0; y < image.height; y++) {
+    for (int x = 0; x < image.width; x++) {
+      int pixel = image.getPixel(x, y);
+      sumR += img.getRed(pixel);
+      sumG += img.getGreen(pixel);
+      sumB += img.getBlue(pixel);
+    }
+  }
+
+  // Calculate average RGB values
+  int numPixels = image.width * image.height;
+  int avgR = sumR ~/ numPixels;
+  int avgG = sumG ~/ numPixels;
+  int avgB = sumB ~/ numPixels;
+
+  // Return the resulting color
+  return Color.fromRGBO(avgR, avgG, avgB, 1.0);
 }
 
 int isColorSimilar(Color color1, Color color2, int threshold) {

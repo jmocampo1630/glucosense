@@ -80,15 +80,15 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               deleteDialog(context);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.settings),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => const SettingsPage()),
+          //     );
+          //   },
+          // ),
         ],
       ),
       body: Column(
@@ -243,7 +243,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               // Handle cancel action
               Navigator.of(context).pop();
             },
-            submitText: 'Proceed',
+            submitText: 'Yes',
           );
         },
       );
