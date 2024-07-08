@@ -26,12 +26,11 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
           SizedBox(
             width: 100,
             height: 100,
-            child: Expanded(
-                child: Image(
+            child: Image(
               image: FileImage(widget.image),
               width: 100,
               height: 100,
-            )),
+            ),
           ),
           const SizedBox(height: 10),
           const Text(

@@ -208,8 +208,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   void updateRecords(File? image) async {
     if (image == null) return;
     GlucoseRecord? record = await generateColor(image);
+    if (!mounted) return;
     if (record != null) {
-      if (!mounted) return;
       final isSave = await showDialog<bool>(
           context: context,
           builder: (context) => ScanGlucoseRecordModal(
@@ -228,13 +228,32 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         record.id = id;
         items.add(record);
       }
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SubmitCancelDialog(
+            title: 'Scan Failed',
+            content: 'Do you want to try again?',
+            onSubmit: () {
+              Navigator.of(context).pop();
+              openCamera();
+            },
+            onCancel: () {
+              // Handle cancel action
+              Navigator.of(context).pop();
+            },
+            submitText: 'Proceed',
+          );
+        },
+      );
     }
     setState(() {
       if (record != null) {
         items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {
-        showToastWarning("Scan failed. Please try again.", ToastType.error);
+        // showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
   }
