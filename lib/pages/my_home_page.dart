@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/modals/add_patient_modal.dart';
+import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/patient_record_page.dart';
 import 'package:glucolook/services/patient.services.dart';
@@ -64,6 +65,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                 )),
                       );
                     },
+                    trailing: PopupMenuButton<String>(
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: Text('Delete'),
+                        ),
+                        // const PopupMenuItem<String>(
+                        //   value: 'detail',
+                        //   child: Text('Detail'),
+                        // ),
+                      ],
+                      onSelected: (String value) {
+                        if (value == 'delete') {
+                          deleteDialog(context, patients[index].id);
+                        }
+                      },
+                    ),
                   ),
                 );
               },
@@ -109,5 +128,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildFormModal(BuildContext context) {
     return const AddPatientDialog();
+  }
+
+  void deleteDialog(BuildContext context, String patientId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SubmitCancelDialog(
+          title: 'Delete Patient',
+          content: 'Are you sure you want to delete this patient?',
+          onSubmit: () {
+            patientDatabaseServices.deletePatient(patientId);
+            Navigator.of(context).pop();
+            _loadPatients();
+          },
+          onCancel: () {
+            // Handle cancel action
+            Navigator.of(context).pop();
+          },
+          submitText: 'Proceed',
+        );
+      },
+    );
   }
 }

@@ -73,23 +73,17 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            onPressed: () {
-              deleteDialog(context);
-            },
-          ),
-          // IconButton(
-          //   icon: const Icon(Icons.settings),
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => const SettingsPage()),
-          //     );
-          //   },
-          // ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.settings),
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => const SettingsPage()),
+        //       );
+        //     },
+        //   ),
+        // ],
       ),
       body: Column(
         children: [
@@ -256,33 +250,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         // showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
-  }
-
-  void deleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SubmitCancelDialog(
-          title: 'Delete Patient',
-          content: 'Are you sure you want to delete this patient?',
-          onSubmit: () {
-            patientDatabaseServices.deletePatient(widget.patientId);
-            Navigator.of(context).pop();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      MyHomePage(title: widget.title, camera: widget.camera)),
-            );
-          },
-          onCancel: () {
-            // Handle cancel action
-            Navigator.of(context).pop();
-          },
-          submitText: 'Proceed',
-        );
-      },
-    );
   }
 
   // Future _pickImageFromGallery() async {
