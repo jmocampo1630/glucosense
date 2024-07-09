@@ -8,8 +8,7 @@ import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
-import 'package:glucolook/pages/line_chart.dart';
-import 'package:glucolook/pages/my_home_page.dart';
+import 'package:glucolook/pages/glucose_level_detail.dart';
 import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
@@ -73,17 +72,17 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.settings),
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => const SettingsPage()),
-        //       );
-        //     },
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -106,68 +105,74 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    title: Text(items[index].name),
-                    subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
-                        .format(items[index].date)),
-                    leading: SizedBox(
-                        width: 80,
-                        height: 50,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    items[index].value.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const Text(
-                                    'mg/dL',
-                                    style: TextStyle(fontSize: 12.0),
-                                  )
-                                ],
+                      title: Text(items[index].name,
+                          style: const TextStyle(
+                              fontSize: 15.0, fontWeight: FontWeight.w900)),
+                      subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
+                          .format(items[index].date)),
+                      leading: SizedBox(
+                          width: 80,
+                          height: 50,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      items[index].value.toStringAsFixed(1),
+                                      style: const TextStyle(
+                                          fontSize: 17.0,
+                                          fontWeight: FontWeight.w900),
+                                    ),
+                                    const Text(
+                                      'mg/dL',
+                                      style: TextStyle(fontSize: 12.0),
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 5,
-                              height: 50,
-                              color: items[index].color,
-                            )
-                          ],
-                        )),
-                    trailing: PopupMenuButton<String>(
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Text('Delete'),
-                        ),
-                        // const PopupMenuItem<String>(
-                        //   value: 'detail',
-                        //   child: Text('Detail'),
-                        // ),
-                      ],
-                      onSelected: (String value) {
-                        if (value == 'delete') {
-                          glucoseRecordDatabaseServices.deleteGlucoseRecord(
-                              widget.patientId, items[index].id);
-                          setState(() {
-                            items.remove(items[index]);
-                          });
-                        } else if (value == 'detail') {
-                          // Handle detail action
-                        }
-                      },
-                    ),
-                    onTap: () {
-                      // Handle onTap event if needed
-                    },
-                  ),
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 5,
+                                height: 50,
+                                color: items[index].color,
+                              )
+                            ],
+                          )),
+                      trailing: PopupMenuButton<String>(
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                          // const PopupMenuItem<String>(
+                          //   value: 'detail',
+                          //   child: Text('Detail'),
+                          // ),
+                        ],
+                        onSelected: (String value) {
+                          if (value == 'delete') {
+                            glucoseRecordDatabaseServices.deleteGlucoseRecord(
+                                widget.patientId, items[index].id);
+                            setState(() {
+                              items.remove(items[index]);
+                            });
+                          } else if (value == 'detail') {
+                            // Handle detail action
+                          }
+                        },
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GlucoseLevelDetail(
+                                  glucoseRecord: items[index])),
+                        );
+                      }),
                 );
               },
             ),

@@ -40,10 +40,12 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: widget.glucoseRecord.color,
+              ClipOval(
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  color: widget.glucoseRecord.color,
+                ),
               ),
               const SizedBox(width: 5),
               Text('${widget.glucoseRecord.value} mg/dL',
