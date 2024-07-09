@@ -107,9 +107,11 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                   child: ListTile(
                       title: Text(items[index].name,
                           style: const TextStyle(
-                              fontSize: 15.0, fontWeight: FontWeight.w900)),
-                      subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
-                          .format(items[index].date)),
+                              fontSize: 15.0, fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                          DateFormat('yyyy-MM-dd hh:mm a')
+                              .format(items[index].date),
+                          style: const TextStyle(fontSize: 14.0)),
                       leading: SizedBox(
                           width: 80,
                           height: 50,
