@@ -36,7 +36,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Low = Hypoglycemia',
     range: ColorRange.fromColor(const Color(0xFFF3D8AA)),
     color: const Color(0xFFF3D8AA),
     value: 0.61,
@@ -46,7 +46,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Low = Hypoglycemia',
     range: ColorRange.fromColor(const Color(0xFFEEC5A3)),
     color: const Color(0xFFEEC5A3),
     value: 1.22,
@@ -56,60 +56,20 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Normal',
     range: ColorRange.fromColor(const Color(0xFFE9B29B)),
     color: const Color(0xFFE9B29B),
     value: 2.44,
     recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFE4A093)),
-    color: const Color(0xFFE4A093),
-    value: 4.88,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
-    color: const Color(0xFFDF8D8B),
-    value: 9.77,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFDA7B83)),
-    color: const Color(0xFFDA7B83),
-    value: 19.53,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFD5687B)),
-    color: const Color(0xFFD5687B),
-    value: 39.06,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
+      'Maintain a proper diet, drink plenty of water, good exercise, and sleep at least 8 hours a day.',
+      'Proper monitoring of glucose.'
     ],
   ),
   ColorMetrics(
     name: 'Normal',
-    range: ColorRange.fromColor(const Color(0xFFD05574)),
-    color: const Color(0xFFD05574),
-    value: 78.13,
+    range: ColorRange.fromColor(const Color(0xFFE4A093)),
+    color: const Color(0xFFE4A093),
+    value: 4.88,
     recommendations: [
       'Maintain a proper diet, drink plenty of water, good exercise, and sleep at least 8 hours a day.',
       'Proper monitoring of glucose.'
@@ -117,12 +77,52 @@ List<ColorMetrics> colorRanges = [
   ),
   ColorMetrics(
     name: 'High = Hyperglycemia',
+    range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
+    color: const Color(0xFFDF8D8B),
+    value: 9.77,
+    recommendations: [
+      'Recognize symptoms such as fatigue, thirst, blurry vision, and frequent urination.',
+      'Adjust diabetes management strategies, including meal plans, physical activity, or medications, as advised by healthcare providers.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'High = Hyperglycemia',
+    range: ColorRange.fromColor(const Color(0xFFDA7B83)),
+    color: const Color(0xFFDA7B83),
+    value: 19.53,
+    recommendations: [
+      'Recognize symptoms such as fatigue, thirst, blurry vision, and frequent urination.',
+      'Adjust diabetes management strategies, including meal plans, physical activity, or medications, as advised by healthcare providers.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High = Severe Hyperglycemia',
+    range: ColorRange.fromColor(const Color(0xFFD5687B)),
+    color: const Color(0xFFD5687B),
+    value: 39.06,
+    recommendations: [
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High = Severe Hyperglycemia',
+    range: ColorRange.fromColor(const Color(0xFFD05574)),
+    color: const Color(0xFFD05574),
+    value: 78.13,
+    recommendations: [
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High = Severe Hyperglycemia',
     range: ColorRange.fromColor(const Color(0xFFCB436E)),
     color: const Color(0xFFCB436E),
     value: 156.25,
     recommendations: [
-      'Recognize symptoms such as fatigue, thirst, blurry vision, and frequent urination.',
-      'Adjust diabetes management strategies, including meal plans, physical activity, or medications, as advised by healthcare providers.'
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
     ],
   ),
   ColorMetrics(
