@@ -2,10 +2,12 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/modals/add_patient_modal.dart';
 import 'package:glucolook/modals/submit_cancel_dialog.dart';
+import 'package:glucolook/modals/terms_modal.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/patient_record_page.dart';
 import 'package:glucolook/services/patient.services.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.camera});
@@ -104,6 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTermsAccepted();
+    });
     _loadPatients(); // Load patients when the page initializes
   }
 
@@ -148,6 +153,38 @@ class _MyHomePageState extends State<MyHomePage> {
           },
           submitText: 'Proceed',
         );
+      },
+    );
+  }
+
+  Future<void> _checkTermsAccepted() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? termsAccepted = prefs.getBool('termsAccepted') ?? false;
+
+    if (!termsAccepted) {
+      if (!mounted) return;
+      bool? agreed = await _showTermsPopup(context);
+
+      if (agreed != null && agreed) {
+        await prefs.setBool('termsAccepted', true);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You agreed to the terms')),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You disagreed to the terms')),
+        );
+      }
+    }
+  }
+
+  Future<bool?> _showTermsPopup(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return const TermsModal();
       },
     );
   }
