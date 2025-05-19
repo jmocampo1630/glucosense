@@ -183,6 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<bool?> _showTermsPopup(BuildContext context) {
     return showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return const TermsModal();
       },

@@ -15,7 +15,7 @@ int defaultThreshold = 150;
 int defaultType = 2;
 List<ColorMetrics> colorRanges = [
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Very Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFFDFDBA)),
     color: const Color(0xFFFDFDBA),
     value: 0.15,
@@ -25,7 +25,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Very Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFF8EAB2)),
     color: const Color(0xFFF8EAB2),
     value: 0.31,
@@ -35,7 +35,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Low = Hypoglycemia',
+    name: 'Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFF3D8AA)),
     color: const Color(0xFFF3D8AA),
     value: 0.61,
@@ -45,7 +45,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Low = Hypoglycemia',
+    name: 'Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFEEC5A3)),
     color: const Color(0xFFEEC5A3),
     value: 1.22,
@@ -75,7 +75,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'High = Hyperglycemia',
+    name: 'High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
     color: const Color(0xFFDF8D8B),
     value: 9.77,
@@ -85,7 +85,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'High = Hyperglycemia',
+    name: 'High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFDA7B83)),
     color: const Color(0xFFDA7B83),
     value: 19.53,
@@ -95,7 +95,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very High = Severe Hyperglycemia',
+    name: 'Very High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFD5687B)),
     color: const Color(0xFFD5687B),
     value: 39.06,
@@ -105,7 +105,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very High = Severe Hyperglycemia',
+    name: 'Very High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFD05574)),
     color: const Color(0xFFD05574),
     value: 78.13,
@@ -115,7 +115,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very High = Severe Hyperglycemia',
+    name: 'Very High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFCB436E)),
     color: const Color(0xFFCB436E),
     value: 156.25,
@@ -125,7 +125,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very High = Severe Hyperglycemia',
+    name: 'Very High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFC63064)),
     color: const Color(0xFFC63064),
     value: 312.5,
