@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
-
 import 'package:path_provider/path_provider.dart';
 
 class CameraPage extends StatefulWidget {
@@ -18,6 +16,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   late CameraController controller;
+  bool _isFlashOn = false;
 
   @override
   void initState() {
@@ -62,7 +61,20 @@ class _CameraPageState extends State<CameraPage> {
             child: CameraPreview(controller),
           ),
           Positioned(
-            bottom: 20.0,
+            bottom: 25.0,
+            left: 70.0,
+            child: IconButton(
+              onPressed: _toggleFlash,
+              icon: Icon(
+                _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                color: Colors.white,
+                size: 48.0,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 25.0,
+            right: 70.0,
             child: IconButton(
               onPressed: () => _takePictureAndNavigateBack(context, controller),
               icon: const Icon(Icons.camera_alt),
@@ -76,8 +88,8 @@ class _CameraPageState extends State<CameraPage> {
               height: 100,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Colors.blue, // Set the color of the border
-                  width: 2.0, // Set the width of the border
+                  color: Colors.blue,
+                  width: 2.0,
                 ),
               ),
             ),
@@ -85,6 +97,18 @@ class _CameraPageState extends State<CameraPage> {
         ],
       ),
     );
+  }
+
+  void _toggleFlash() async {
+    final FlashMode newFlashMode = _isFlashOn ? FlashMode.off : FlashMode.torch;
+    try {
+      await controller.setFlashMode(newFlashMode);
+      setState(() {
+        _isFlashOn = !_isFlashOn;
+      });
+    } catch (e) {
+      print('Error toggling flash: $e');
+    }
   }
 }
 

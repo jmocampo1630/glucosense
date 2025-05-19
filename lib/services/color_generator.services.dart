@@ -1,18 +1,21 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/glucose.model.dart';
 import 'package:glucolook/services/preferences.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:image/image.dart' as img;
 
 // default values
 int defaultThreshold = 150;
 int defaultType = 2;
 List<ColorMetrics> colorRanges = [
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Very Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFFDFDBA)),
     color: const Color(0xFFFDFDBA),
     value: 0.15,
@@ -22,7 +25,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Very Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFF8EAB2)),
     color: const Color(0xFFF8EAB2),
     value: 0.31,
@@ -32,7 +35,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFF3D8AA)),
     color: const Color(0xFFF3D8AA),
     value: 0.61,
@@ -42,7 +45,7 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Low Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFEEC5A3)),
     color: const Color(0xFFEEC5A3),
     value: 1.22,
@@ -52,77 +55,77 @@ List<ColorMetrics> colorRanges = [
     ],
   ),
   ColorMetrics(
-    name: 'Very low = Hypoglycemia',
+    name: 'Normal',
     range: ColorRange.fromColor(const Color(0xFFE9B29B)),
     color: const Color(0xFFE9B29B),
     value: 2.44,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFE4A093)),
-    color: const Color(0xFFE4A093),
-    value: 4.88,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
-    color: const Color(0xFFDF8D8B),
-    value: 9.77,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Very low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFDA7B83)),
-    color: const Color(0xFFDA7B83),
-    value: 19.53,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Low = Hypoglycemia',
-    range: ColorRange.fromColor(const Color(0xFFD5687B)),
-    color: const Color(0xFFD5687B),
-    value: 39.06,
-    recommendations: [
-      'Recognize symptoms such as shakiness, headache, and cold sweat.',
-      'Promptly treat low blood glucose with glucagon if necessary, and ensure caregivers are trained in its administration.'
-    ],
-  ),
-  ColorMetrics(
-    name: 'Normal',
-    range: ColorRange.fromColor(const Color(0xFFD05574)),
-    color: const Color(0xFFD05574),
-    value: 78.13,
     recommendations: [
       'Maintain a proper diet, drink plenty of water, good exercise, and sleep at least 8 hours a day.',
       'Proper monitoring of glucose.'
     ],
   ),
   ColorMetrics(
-    name: 'High = Hyperglycemia',
-    range: ColorRange.fromColor(const Color(0xFFCB436E)),
-    color: const Color(0xFFCB436E),
-    value: 156.25,
+    name: 'Normal',
+    range: ColorRange.fromColor(const Color(0xFFE4A093)),
+    color: const Color(0xFFE4A093),
+    value: 4.88,
+    recommendations: [
+      'Maintain a proper diet, drink plenty of water, good exercise, and sleep at least 8 hours a day.',
+      'Proper monitoring of glucose.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'High Salivary Glucose',
+    range: ColorRange.fromColor(const Color(0xFFDF8D8B)),
+    color: const Color(0xFFDF8D8B),
+    value: 9.77,
     recommendations: [
       'Recognize symptoms such as fatigue, thirst, blurry vision, and frequent urination.',
       'Adjust diabetes management strategies, including meal plans, physical activity, or medications, as advised by healthcare providers.'
     ],
   ),
   ColorMetrics(
-    name: 'Very High = Severe Hyperglycemia',
+    name: 'High Salivary Glucose',
+    range: ColorRange.fromColor(const Color(0xFFDA7B83)),
+    color: const Color(0xFFDA7B83),
+    value: 19.53,
+    recommendations: [
+      'Recognize symptoms such as fatigue, thirst, blurry vision, and frequent urination.',
+      'Adjust diabetes management strategies, including meal plans, physical activity, or medications, as advised by healthcare providers.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High Salivary Glucose',
+    range: ColorRange.fromColor(const Color(0xFFD5687B)),
+    color: const Color(0xFFD5687B),
+    value: 39.06,
+    recommendations: [
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High Salivary Glucose',
+    range: ColorRange.fromColor(const Color(0xFFD05574)),
+    color: const Color(0xFFD05574),
+    value: 78.13,
+    recommendations: [
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High Salivary Glucose',
+    range: ColorRange.fromColor(const Color(0xFFCB436E)),
+    color: const Color(0xFFCB436E),
+    value: 156.25,
+    recommendations: [
+      'Seek immediate medical attention if signs of diabetic ketoacidosis or hyperosmolar hyperglycemic state are present.',
+      'Emergency treatment typically involves fluid and electrolyte replacement, along with insulin therapy.'
+    ],
+  ),
+  ColorMetrics(
+    name: 'Very High Salivary Glucose',
     range: ColorRange.fromColor(const Color(0xFFC63064)),
     color: const Color(0xFFC63064),
     value: 312.5,
@@ -172,14 +175,16 @@ Future<GlucoseRecord?> generateColor(File? image) async {
   DateTime now = DateTime.now();
   String formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(now);
 
-  paletteGenerator = await PaletteGenerator.fromImageProvider(FileImage(image),
-      size: imageSize,
-      region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
-  Color generatedColor = paletteGenerator != null
-      ? paletteGenerator!.dominantColor != null
-          ? paletteGenerator!.dominantColor!.color
-          : defaultColor
-      : defaultColor;
+  // paletteGenerator = await PaletteGenerator.fromImageProvider(FileImage(image),
+  //     size: imageSize,
+  //     region: Rect.fromLTRB(0, 0, imageSize.width, imageSize.height));
+  // Color generatedColor = paletteGenerator != null
+  //     ? paletteGenerator!.dominantColor != null
+  //         ? paletteGenerator!.dominantColor!.color
+  //         : defaultColor
+  //     : defaultColor;
+
+  Color generatedColor = await mixImageColors(image);
 
   ColorMetrics? glucoseLevel = await getTestResult(generatedColor);
   if (glucoseLevel != null) {
@@ -194,6 +199,36 @@ Future<GlucoseRecord?> generateColor(File? image) async {
   } else {
     return null;
   }
+}
+
+Future<Color> mixImageColors(File imageFile) async {
+  // Read image file
+  Uint8List bytes = await imageFile.readAsBytes();
+  img.Image image = img.decodeImage(bytes) as img.Image;
+
+  // Initialize sum of R, G, B values
+  int sumR = 0;
+  int sumG = 0;
+  int sumB = 0;
+
+  // Iterate through each pixel and sum up RGB values
+  for (int y = 0; y < image.height; y++) {
+    for (int x = 0; x < image.width; x++) {
+      int pixel = image.getPixel(x, y);
+      sumR += img.getRed(pixel);
+      sumG += img.getGreen(pixel);
+      sumB += img.getBlue(pixel);
+    }
+  }
+
+  // Calculate average RGB values
+  int numPixels = image.width * image.height;
+  int avgR = sumR ~/ numPixels;
+  int avgG = sumG ~/ numPixels;
+  int avgB = sumB ~/ numPixels;
+
+  // Return the resulting color
+  return Color.fromRGBO(avgR, avgG, avgB, 1.0);
 }
 
 int isColorSimilar(Color color1, Color color2, int threshold) {
@@ -215,8 +250,29 @@ Future<ColorMetrics?> getTestResult(Color color) async {
       ColorMetrics? rangeResult = await classifyColor(color);
       return rangeResult;
     default:
-      return diffMethod(color);
+      return findClosestColor(color);
   }
+}
+
+double calculateDistance(Color c1, Color c2) {
+  return sqrt(pow(c1.red - c2.red, 2) +
+      pow(c1.green - c2.green, 2) +
+      pow(c1.blue - c2.blue, 2));
+}
+
+ColorMetrics findClosestColor(Color targetColor) {
+  double minDistance = double.infinity;
+  ColorMetrics? closestColor;
+
+  for (var metric in colorRanges) {
+    double distance = calculateDistance(targetColor, metric.color);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestColor = metric;
+    }
+  }
+
+  return closestColor!;
 }
 
 Future<ColorMetrics?> diffMethod(Color color) async {

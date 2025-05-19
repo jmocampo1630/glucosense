@@ -4,10 +4,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/enums/toast_type.dart';
 import 'package:glucolook/modals/scan_glucose_record_modal.dart';
+import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
-import 'package:glucolook/pages/line_chart.dart';
+import 'package:glucolook/pages/glucose_level_detail.dart';
 import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
@@ -104,68 +105,76 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    title: Text(items[index].name),
-                    subtitle: Text(DateFormat('yyyy-MM-dd hh:mm a')
-                        .format(items[index].date)),
-                    leading: SizedBox(
-                        width: 80,
-                        height: 50,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    items[index].value.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const Text(
-                                    'mg/dL',
-                                    style: TextStyle(fontSize: 12.0),
-                                  )
-                                ],
+                      title: Text(items[index].name,
+                          style: const TextStyle(
+                              fontSize: 15.0, fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                          DateFormat('yyyy-MM-dd hh:mm a')
+                              .format(items[index].date),
+                          style: const TextStyle(fontSize: 14.0)),
+                      leading: SizedBox(
+                          width: 80,
+                          height: 50,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      items[index].value.toStringAsFixed(1),
+                                      style: const TextStyle(
+                                          fontSize: 17.0,
+                                          fontWeight: FontWeight.w900),
+                                    ),
+                                    const Text(
+                                      'mg/dL',
+                                      style: TextStyle(fontSize: 12.0),
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 5,
-                              height: 50,
-                              color: items[index].color,
-                            )
-                          ],
-                        )),
-                    trailing: PopupMenuButton<String>(
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Text('Delete'),
-                        ),
-                        // const PopupMenuItem<String>(
-                        //   value: 'detail',
-                        //   child: Text('Detail'),
-                        // ),
-                      ],
-                      onSelected: (String value) {
-                        if (value == 'delete') {
-                          glucoseRecordDatabaseServices.deleteGlucoseRecord(
-                              widget.patientId, items[index].id);
-                          setState(() {
-                            items.remove(items[index]);
-                          });
-                        } else if (value == 'detail') {
-                          // Handle detail action
-                        }
-                      },
-                    ),
-                    onTap: () {
-                      // Handle onTap event if needed
-                    },
-                  ),
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 5,
+                                height: 50,
+                                color: items[index].color,
+                              )
+                            ],
+                          )),
+                      trailing: PopupMenuButton<String>(
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                          // const PopupMenuItem<String>(
+                          //   value: 'detail',
+                          //   child: Text('Detail'),
+                          // ),
+                        ],
+                        onSelected: (String value) {
+                          if (value == 'delete') {
+                            glucoseRecordDatabaseServices.deleteGlucoseRecord(
+                                widget.patientId, items[index].id);
+                            setState(() {
+                              items.remove(items[index]);
+                            });
+                          } else if (value == 'detail') {
+                            // Handle detail action
+                          }
+                        },
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GlucoseLevelDetail(
+                                  glucoseRecord: items[index])),
+                        );
+                      }),
                 );
               },
             ),
@@ -198,12 +207,16 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   }
 
   void updateRecords(File? image) async {
+    if (image == null) return;
     GlucoseRecord? record = await generateColor(image);
+    if (!mounted) return;
     if (record != null) {
-      if (!mounted) return;
       final isSave = await showDialog<bool>(
           context: context,
-          builder: (context) => ScanGlucoseRecordModal(glucoseRecord: record));
+          builder: (context) => ScanGlucoseRecordModal(
+                glucoseRecord: record,
+                image: image,
+              ));
 
       if (!(isSave != null && isSave)) {
         openCamera();
@@ -216,13 +229,32 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         record.id = id;
         items.add(record);
       }
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SubmitCancelDialog(
+            title: 'Scan Failed',
+            content: 'Do you want to try again?',
+            onSubmit: () {
+              Navigator.of(context).pop();
+              openCamera();
+            },
+            onCancel: () {
+              // Handle cancel action
+              Navigator.of(context).pop();
+            },
+            submitText: 'Yes',
+          );
+        },
+      );
     }
     setState(() {
       if (record != null) {
         items.sort((a, b) => b.date.compareTo(a.date));
         showToastWarning("Scan successful!", ToastType.success);
       } else {
-        showToastWarning("Scan failed. Please try again.", ToastType.error);
+        // showToastWarning("Scan failed. Please try again.", ToastType.error);
       }
     });
   }

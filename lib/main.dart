@@ -24,9 +24,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'GlucoLook',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF37B5B6)),
         useMaterial3: true,
       ),
+      // darkTheme: ThemeData(
+      //   brightness: Brightness.dark,
+      //   colorScheme: ColorScheme.fromSeed(
+      //       seedColor: const Color(0xFF37B5B6), brightness: Brightness.dark),
+      //   useMaterial3: true,
+      // ),
+      themeMode: ThemeMode.system, // Use system theme mode
       home: MyHomePage(title: 'GlucoLook', camera: camera),
       // home: PatientRecordPage(title: 'GlucoLook', camera: camera),
     );
