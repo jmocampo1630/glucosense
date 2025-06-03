@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
@@ -9,8 +10,16 @@ class PatientDatabaseServices {
 
   Future<String?> addPatient(Patient patient) async {
     try {
+      // Get current user's UID
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('User not logged in');
+
+      // Add UID to patient
+      final patientWithUid = patient.copyWith(
+          uid: uid); // You need a copyWith method or set patient.uid = uid
+
       DatabaseReference dbRef = _patientsRef.push();
-      await dbRef.set(patient.toJson());
+      await dbRef.set(patientWithUid.toJson());
       return dbRef.key;
     } catch (e) {
       if (kDebugMode) {
@@ -23,7 +32,10 @@ class PatientDatabaseServices {
   Future<List<Patient>> getPatients() async {
     List<Patient> records = [];
     try {
-      var event = await _patientsRef.once();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('User not logged in');
+
+      var event = await _patientsRef.orderByChild('uid').equalTo(uid).once();
       DataSnapshot snapshot = event.snapshot;
 
       Map<dynamic, dynamic>? values = snapshot.value as Map<dynamic, dynamic>?;
