@@ -30,11 +30,34 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+          PopupMenuButton<String>(
+            icon: const CircleAvatar(
+              child: Icon(Icons.person),
+            ),
+            itemBuilder: (BuildContext context) {
+              final user = FirebaseAuth.instance.currentUser;
+              return [
+                PopupMenuItem<String>(
+                  enabled: false,
+                  child: Text(user?.email ?? 'No user'),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Logout'),
+                      Icon(Icons.logout, size: 20),
+                    ],
+                  ),
+                ),
+              ];
+            },
+            onSelected: (String value) async {
+              if (value == 'logout') {
+                await FirebaseAuth.instance.signOut();
+              }
             },
           ),
         ],
