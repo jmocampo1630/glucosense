@@ -93,6 +93,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 8.0),
                       title: Text(items[index].name,
                           style: const TextStyle(
                               fontSize: 15.0, fontWeight: FontWeight.bold)),
@@ -101,36 +103,55 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                               .format(items[index].date),
                           style: const TextStyle(fontSize: 14.0)),
                       leading: SizedBox(
-                          width: 80,
-                          height: 50,
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      items[index].value.toStringAsFixed(1),
-                                      style: const TextStyle(
-                                          fontSize: 17.0,
-                                          fontWeight: FontWeight.w900),
+                        width: 80,
+                        height: 50,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 60,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    items[index].value.toStringAsFixed(1),
+                                    style: TextStyle(
+                                      fontSize: 17.0,
+                                      fontWeight: FontWeight.w900,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      letterSpacing: 0.5,
                                     ),
-                                    const Text(
-                                      'mg/dL',
-                                      style: TextStyle(fontSize: 12.0),
-                                    )
-                                  ],
-                                ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'mg/dL',
+                                    style: TextStyle(
+                                      fontSize: 11.0,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 10),
-                              Container(
-                                width: 5,
-                                height: 50,
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              width: 5,
+                              height: 45,
+                              decoration: BoxDecoration(
                                 color: items[index].color,
-                              )
-                            ],
-                          )),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       trailing: PopupMenuButton<String>(
                         itemBuilder: (BuildContext context) =>
                             <PopupMenuEntry<String>>[
