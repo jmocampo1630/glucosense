@@ -6,6 +6,7 @@ import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/modals/terms_modal.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/patient_record_page.dart';
+import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/patient.services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,14 +69,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const PopupMenuDivider(),
                 const PopupMenuItem<String>(
+                  value: 'settings',
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings, size: 20),
+                      SizedBox(width: 20),
+                      Text('Settings'),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem<String>(
                   value: 'logout',
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Logout',
-                      ),
                       Icon(Icons.logout, size: 20),
+                      SizedBox(width: 20),
+                      Text('Logout'),
                     ],
                   ),
                 ),
@@ -84,6 +94,11 @@ class _MyHomePageState extends State<MyHomePage> {
             onSelected: (String value) async {
               if (value == 'logout') {
                 await FirebaseAuth.instance.signOut();
+              } else if (value == 'settings') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
               }
             },
           ),

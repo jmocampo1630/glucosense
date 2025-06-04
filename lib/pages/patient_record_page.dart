@@ -9,7 +9,6 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/glucose_level_detail.dart';
-import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
@@ -72,17 +71,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [

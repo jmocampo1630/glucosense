@@ -16,67 +16,98 @@ class ScanGlucoseRecordModal extends StatefulWidget {
 class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
   @override
   Widget build(BuildContext context) {
-    // final recommendations = getRecommendations(widget.glucoseRecord.value);
     return AlertDialog(
-      title: const Center(child: Text('Glucose Record')),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.bloodtype, color: Color(0xFF37B5B6)),
+          SizedBox(width: 8),
+          Text('Glucose Record'),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          SizedBox(
-            width: 100,
-            height: 100,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
             child: Image(
               image: FileImage(widget.image),
               width: 100,
               height: 100,
+              fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 18),
           const Text(
-            'Glucose Level:',
-            style: TextStyle(fontSize: 18.0),
+            'Glucose Level',
+            style: TextStyle(fontSize: 16.0, color: Colors.black54),
           ),
+          const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ClipOval(
                 child: Container(
-                  width: 18,
-                  height: 18,
+                  width: 20,
+                  height: 20,
                   color: widget.glucoseRecord.color,
                 ),
               ),
-              const SizedBox(width: 5),
-              Text('${widget.glucoseRecord.value} mg/dL',
-                  style: const TextStyle(
-                      fontSize: 20.0, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 8),
+              Text(
+                '${widget.glucoseRecord.value} mg/dL',
+                style: const TextStyle(
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF37B5B6),
+                ),
+              ),
             ],
           ),
-          Text(widget.glucoseRecord.name,
-              style: const TextStyle(fontSize: 18.0)),
+          const SizedBox(height: 10),
+          Text(
+            widget.glucoseRecord.name,
+            style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
-      actions: <Widget>[
-        Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  foregroundColor: Colors.black87,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  elevation: 0,
+                ),
+                onPressed: () => Navigator.pop(context, false),
                 child: const Text('Retry'),
-                onPressed: () {
-                  Navigator.pop(context, false);
-                },
               ),
-              const SizedBox(width: 16), // Optional spacing between buttons
-              ElevatedButton(
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF37B5B6),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () => Navigator.pop(context, true),
                 child: const Text('Submit'),
-                onPressed: () {
-                  Navigator.pop(context, true);
-                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );

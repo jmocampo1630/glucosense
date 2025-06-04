@@ -21,65 +21,81 @@ class _GlucoseLevelDetailState extends State<GlucoseLevelDetail> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text("Glucose Record"),
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          const SizedBox(height: 50),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.0),
-            child: Container(
-              width: 100,
-              height: 100,
-              color: widget.glucoseRecord.color,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Glucose Level:',
-            style: TextStyle(fontSize: 18.0),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('${widget.glucoseRecord.value} mg/dL',
-                  style: const TextStyle(
-                      fontSize: 20.0, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          Text(widget.glucoseRecord.name,
-              style: const TextStyle(fontSize: 18.0)),
-          const SizedBox(height: 20),
-          Card(
-            margin: const EdgeInsets.symmetric(
-                horizontal:
-                    16.0), // Adjusts the horizontal margin to make the card smaller
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: Text(
-                      'Recommendations/Suggestions',
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 24),
+          child: Center(
+            child: Card(
+              elevation: 5,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        color: widget.glucoseRecord.color,
+                        child: const Icon(Icons.bloodtype,
+                            size: 54, color: Colors.white),
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                      height:
-                          16.0), // Adds space between the title and the list
-                  BulletList(
-                    sentences: recommendations,
-                  ),
-                ],
+                    const SizedBox(height: 18),
+                    Text(
+                      widget.glucoseRecord.name,
+                      style: const TextStyle(
+                        fontSize: 22.0,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF37B5B6),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${widget.glucoseRecord.value} mg/dL',
+                      style: TextStyle(
+                        fontSize: 26.0,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Glucose Level',
+                      style: TextStyle(fontSize: 15.0, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 28),
+                    Divider(thickness: 1.2, color: Colors.grey[300]),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        const Icon(Icons.tips_and_updates,
+                            color: Color(0xFF37B5B6)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Recommendations',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    BulletList(sentences: recommendations),
+                  ],
+                ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
