@@ -22,6 +22,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
   List<Patient> patients = [];
+  bool isLoading = true; // <-- Add this
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTermsAccepted();
+    });
+    _loadPatients(); // Load patients when the page initializes
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +49,22 @@ class _MyHomePageState extends State<MyHomePage> {
               return [
                 PopupMenuItem<String>(
                   enabled: false,
-                  child: Text(user?.email ?? 'No user'),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 16,
+                        child: Icon(Icons.person, size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          user?.email ?? 'No user',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const PopupMenuDivider(),
                 const PopupMenuItem<String>(
@@ -47,7 +72,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Logout'),
+                      Text(
+                        'Logout',
+                      ),
                       Icon(Icons.logout, size: 20),
                     ],
                   ),
@@ -64,92 +91,88 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          // // for testing only
-          // if (_selectedImage != null)
-          //   Expanded(
-          //       child: Image(
-          //     image: FileImage(_selectedImage!),
-          //     width: imageSize.width,
-          //     height: imageSize.height,
-          //   )),
-          // if (_selectedImage == null) const Text('Please select and image'),
-          // const SizedBox(height: 20),
           Expanded(
-            child: ListView.builder(
-              itemCount: patients.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        _getInitials(patients[index].name),
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    title: Text('Name: ${patients[index].name}'),
-                    subtitle: Text(
-                        'Birthday: ${DateFormat('MMMM dd, yyyy').format(patients[index].dateOfBirth)}'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PatientRecordPage(
-                                  title: patients[index].name,
-                                  patientId: patients[index].id,
-                                  camera: widget.camera,
-                                )),
-                      );
-                    },
-                    trailing: PopupMenuButton<String>(
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Text('Delete'),
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : patients.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No patients found.',
+                          style: TextStyle(fontSize: 18, color: Colors.black54),
                         ),
-                        // const PopupMenuItem<String>(
-                        //   value: 'detail',
-                        //   child: Text('Detail'),
-                        // ),
-                      ],
-                      onSelected: (String value) {
-                        if (value == 'delete') {
-                          deleteDialog(context, patients[index].id);
-                        }
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
+                      )
+                    : ListView.builder(
+                        itemCount: patients.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                child: Text(
+                                  _getInitials(patients[index].name),
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              title: Text('Name: ${patients[index].name}'),
+                              subtitle: Text(
+                                'Birthday: ${DateFormat('MMMM dd, yyyy').format(patients[index].dateOfBirth)}',
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PatientRecordPage(
+                                      title: patients[index].name,
+                                      patientId: patients[index].id,
+                                      camera: widget.camera,
+                                    ),
+                                  ),
+                                );
+                              },
+                              trailing: PopupMenuButton<String>(
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                onSelected: (String value) {
+                                  if (value == 'delete') {
+                                    deleteDialog(context, patients[index].id);
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await showDialog<void>(
-              context: context, builder: (context) => _buildFormModal(context));
-          _loadPatients();
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) => _buildFormModal(context),
+          );
+          if (result == true) {
+            _loadPatients();
+          }
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkTermsAccepted();
-    });
-    _loadPatients(); // Load patients when the page initializes
-  }
-
   // Method to load patients from Firebase
   void _loadPatients() async {
+    setState(() {
+      isLoading = true;
+    });
     List<Patient> loadedPatients = await patientDatabaseServices.getPatients();
     setState(() {
       patients = loadedPatients;
+      isLoading = false;
     });
   }
 
