@@ -104,67 +104,111 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : patients.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No patients found.',
-                          style: TextStyle(fontSize: 18, color: Colors.black54),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: patients.length,
-                        itemBuilder: (context, index) {
-                          return Card(
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                child: Text(
-                                  _getInitials(patients[index].name),
-                                  style: const TextStyle(fontSize: 20),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : patients.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.people_outline,
+                                  size: 64, color: Colors.black26),
+                              SizedBox(height: 16),
+                              Text(
+                                'No patients found.',
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: patients.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 2),
+                          itemBuilder: (context, index) {
+                            return Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.blue.shade100,
+                                  child: Text(
+                                    _getInitials(patients[index].name),
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.blue),
+                                  ),
+                                ),
+                                title: Text(
+                                  patients[index].name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18),
+                                ),
+                                subtitle: patients[index]
+                                        .glucoseRecords
+                                        .isNotEmpty
+                                    ? Text(
+                                        'Last record: ${DateFormat('MM/dd/yyyy hh:mm a').format(
+                                          patients[index]
+                                              .glucoseRecords
+                                              .map((r) => r.date)
+                                              .reduce((a, b) =>
+                                                  a.isAfter(b) ? a : b),
+                                        )}',
+                                        style: const TextStyle(fontSize: 12),
+                                      )
+                                    : const Text(
+                                        'No records',
+                                        style: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 12),
+                                      ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PatientRecordPage(
+                                        title: patients[index].name,
+                                        patientId: patients[index].id,
+                                        camera: widget.camera,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                trailing: PopupMenuButton<String>(
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'delete',
+                                      child: Text('Delete'),
+                                    ),
+                                  ],
+                                  onSelected: (String value) {
+                                    if (value == 'delete') {
+                                      deleteDialog(context, patients[index].id);
+                                    }
+                                  },
                                 ),
                               ),
-                              title: Text('Name: ${patients[index].name}'),
-                              subtitle: Text(
-                                'Birthday: ${DateFormat('MMMM dd, yyyy').format(patients[index].dateOfBirth)}',
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PatientRecordPage(
-                                      title: patients[index].name,
-                                      patientId: patients[index].id,
-                                      camera: widget.camera,
-                                    ),
-                                  ),
-                                );
-                              },
-                              trailing: PopupMenuButton<String>(
-                                itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry<String>>[
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: Text('Delete'),
-                                  ),
-                                ],
-                                onSelected: (String value) {
-                                  if (value == 'delete') {
-                                    deleteDialog(context, patients[index].id);
-                                  }
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add Patient',
         onPressed: () async {
           final result = await showDialog<bool>(
             context: context,

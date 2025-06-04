@@ -36,10 +36,10 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
+  bool isLoading = true; // <-- Add this
 
   GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
-  // File? _selectedImage; // for testing only
 
   @override
   void initState() {
@@ -57,6 +57,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       if (patient != null) {
         items = patient.glucoseRecords;
       }
+      isLoading = false; // <-- Set loading to false after data is loaded
     });
 
     if (thresholdDefault != null) {
@@ -74,119 +75,125 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       ),
       body: Column(
         children: [
-          // // for testing only
-          // if (_selectedImage != null)
-          //   Expanded(
-          //       child: Image(
-          //     image: FileImage(_selectedImage!),
-          //     width: imageSize.width,
-          //     height: imageSize.height,
-          //   )),
-          // if (_selectedImage == null) const Text('Please select and image'),
-          // const SizedBox(height: 20),
-          // const SizedBox(height: 10),
-          // LineChartGraph(records: items),
-          // const SizedBox(height: 20),
           Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 8.0),
-                      title: Text(items[index].name,
-                          style: const TextStyle(
-                              fontSize: 15.0, fontWeight: FontWeight.bold)),
-                      subtitle: Text(
-                          DateFormat('yyyy-MM-dd hh:mm a')
-                              .format(items[index].date),
-                          style: const TextStyle(fontSize: 14.0)),
-                      leading: SizedBox(
-                        width: 80,
-                        height: 50,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : items.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 60,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    items[index].value.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      fontSize: 17.0,
-                                      fontWeight: FontWeight.w900,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      letterSpacing: 0.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'mg/dL',
-                                    style: TextStyle(
-                                      fontSize: 11.0,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.2,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 5,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                color: items[index].color,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
+                            Icon(Icons.analytics_outlined,
+                                size: 64, color: Colors.black26),
+                            SizedBox(height: 16),
+                            Text(
+                              'No glucose records found.',
+                              style: TextStyle(
+                                  fontSize: 18, color: Colors.black54),
                             ),
                           ],
                         ),
-                      ),
-                      trailing: PopupMenuButton<String>(
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Text('Delete'),
-                          ),
-                          // const PopupMenuItem<String>(
-                          //   value: 'detail',
-                          //   child: Text('Detail'),
-                          // ),
-                        ],
-                        onSelected: (String value) {
-                          if (value == 'delete') {
-                            glucoseRecordDatabaseServices.deleteGlucoseRecord(
-                                widget.patientId, items[index].id);
-                            setState(() {
-                              items.remove(items[index]);
-                            });
-                          } else if (value == 'detail') {
-                            // Handle detail action
-                          }
+                      )
+                    : ListView.builder(
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 8.0),
+                              title: Text(items[index].name,
+                                  style: const TextStyle(
+                                      fontSize: 15.0,
+                                      fontWeight: FontWeight.bold)),
+                              subtitle: Text(
+                                  DateFormat('yyyy-MM-dd hh:mm a')
+                                      .format(items[index].date),
+                                  style: const TextStyle(fontSize: 14.0)),
+                              leading: SizedBox(
+                                width: 80,
+                                height: 50,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 60,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            items[index]
+                                                .value
+                                                .toStringAsFixed(1),
+                                            style: TextStyle(
+                                              fontSize: 17.0,
+                                              fontWeight: FontWeight.w900,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              letterSpacing: 0.5,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'mg/dL',
+                                            style: TextStyle(
+                                              fontSize: 11.0,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: 0.2,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Container(
+                                      width: 5,
+                                      height: 45,
+                                      decoration: BoxDecoration(
+                                        color: items[index].color,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              trailing: PopupMenuButton<String>(
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                onSelected: (String value) {
+                                  if (value == 'delete') {
+                                    glucoseRecordDatabaseServices
+                                        .deleteGlucoseRecord(
+                                            widget.patientId, items[index].id);
+                                    setState(() {
+                                      items.remove(items[index]);
+                                    });
+                                  }
+                                },
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => GlucoseLevelDetail(
+                                          glucoseRecord: items[index])),
+                                );
+                              },
+                            ),
+                          );
                         },
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => GlucoseLevelDetail(
-                                  glucoseRecord: items[index])),
-                        );
-                      }),
-                );
-              },
-            ),
           ),
         ],
       ),

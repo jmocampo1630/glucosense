@@ -37,8 +37,9 @@ class _RegisterPageState extends State<RegisterPage> {
         'phone': phoneController.text.trim(),
         'birthday': birthdayController.text.trim(),
       });
-      if (mounted)
+      if (mounted) {
         Navigator.pop(context); // Go back to login after registration
+      }
     } catch (e) {
       setState(() => error = e.toString());
     } finally {
