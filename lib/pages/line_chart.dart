@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/services/color_generator.services.dart';
 import 'package:intl/intl.dart';
 
 class LineChartGraph extends StatefulWidget {
@@ -41,16 +42,49 @@ class _LineChartGraphState extends State<LineChartGraph> {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Sort records by date for the chart (already done)
     final records = List<GlucoseRecord>.from(widget.records)
-      ..sort((a, b) => a.date.compareTo(b.date)); // Sort ascending by date
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     if (records.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final spots = [
-      for (int i = 0; i < records.length; i++) FlSpot(i + 1.0, records[i].value)
+    // 2. Get the color for each record based on its value
+    Color getColorForValue(double value) {
+      // colorRanges must be sorted by value ascending
+      for (final metric in colorRanges) {
+        if (value <= metric.value) {
+          return metric.color;
+        }
+      }
+      return colorRanges.last.color;
+    }
+
+    // 3. Build the fill gradient colors (from left to right, low to high value)
+    final List<Color> fillColors = [
+      for (final record in records)
+        getColorForValue(record.value).withOpacity(0.18),
     ];
+
+    // 4. Build color stops for smooth transition
+    List<double> colorStops = [];
+    if (fillColors.length == 1) {
+      colorStops = [0.0, 1.0];
+    } else {
+      colorStops = List.generate(
+        fillColors.length,
+        (i) => i / (fillColors.length - 1),
+      );
+    }
+
+    // 5. Create the horizontal transparent gradient
+    final fillGradient = LinearGradient(
+      colors: fillColors,
+      stops: colorStops,
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
 
     final minY =
         (records.map((e) => e.value).reduce((a, b) => a < b ? a : b) - 10);
@@ -77,6 +111,16 @@ class _LineChartGraphState extends State<LineChartGraph> {
 
     final double chartWidth =
         ((records.length + 1) * 60 + 40).toDouble().clamp(300, 10000);
+
+    // Find the lowest and highest value in your records
+    final minValue =
+        records.map((e) => e.value).reduce((a, b) => a < b ? a : b);
+    final maxValue =
+        records.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+
+    // Get the color for the lowest and highest value using your color mapping
+    final Color minColor = getColorForValue(minValue).withOpacity(0.25);
+    final Color maxColor = getColorForValue(maxValue).withOpacity(0.35);
 
     return AspectRatio(
       aspectRatio: 1.7,
@@ -167,21 +211,31 @@ class _LineChartGraphState extends State<LineChartGraph> {
                           ),
                           lineBarsData: [
                             LineChartBarData(
-                              spots: spots,
+                              spots: [
+                                for (int i = 0; i < records.length; i++)
+                                  FlSpot(i.toDouble(), records[i].value)
+                              ],
                               isCurved: true,
-                              color: Colors.blueAccent,
                               barWidth: 3,
                               isStrokeCapRound: true,
-                              showingIndicators: [], // optional, for highlight
+                              gradient: LinearGradient(
+                                colors: [
+                                  for (final record in records)
+                                    getColorForValue(record.value)
+                                ],
+                                stops: colorStops,
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
                               belowBarData: BarAreaData(
                                 show: true,
                                 gradient: LinearGradient(
                                   colors: [
-                                    Colors.blueAccent.withOpacity(0.3),
-                                    Colors.blueAccent.withOpacity(0.0),
+                                    minColor, // Bottom color (lowest value)
+                                    maxColor, // Top color (highest value)
                                   ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
                                 ),
                               ),
                               dotData: FlDotData(
