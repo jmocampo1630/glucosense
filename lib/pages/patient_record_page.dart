@@ -9,6 +9,7 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/glucose_level_detail.dart';
+import 'package:glucolook/pages/line_chart.dart'; // Add this import
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
@@ -71,10 +72,18 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(widget.title.toUpperCase()),
       ),
       body: Column(
         children: [
+          if (!isLoading && items.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: SizedBox(
+                height: 220,
+                child: LineChartGraph(records: items),
+              ),
+            ),
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())

@@ -153,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   title: Text(
-                                    patients[index].name,
+                                    patients[index].name.toUpperCase(),
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18),
