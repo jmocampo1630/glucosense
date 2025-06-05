@@ -40,7 +40,9 @@ class _LineChartGraphState extends State<LineChartGraph> {
 
   @override
   Widget build(BuildContext context) {
-    final records = widget.records;
+    final records = List<GlucoseRecord>.from(widget.records)
+      ..sort((a, b) => a.date.compareTo(b.date)); // Sort ascending by date
+
     if (records.isEmpty) {
       return const SizedBox.shrink();
     }

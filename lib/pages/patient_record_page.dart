@@ -57,6 +57,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
     setState(() {
       if (patient != null) {
         items = patient.glucoseRecords;
+        items.sort(
+            (a, b) => b.date.compareTo(a.date)); // Sort descending by date
       }
       isLoading = false;
     });
