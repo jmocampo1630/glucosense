@@ -40,9 +40,12 @@ class PatientDatabaseServices {
 
       Map<dynamic, dynamic>? values = snapshot.value as Map<dynamic, dynamic>?;
       if (values != null) {
-        values.forEach((key, value) {
-          records.add(Patient.fromJson(value, key)); // Pass the key (ID)
-        });
+        // Sort entries by key (push keys are time-ordered)
+        final sortedEntries = values.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
+        for (var entry in sortedEntries) {
+          records.add(Patient.fromJson(entry.value, entry.key));
+        }
       }
     } catch (e) {
       if (kDebugMode) {

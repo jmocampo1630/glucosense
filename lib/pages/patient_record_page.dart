@@ -36,7 +36,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
-  bool isLoading = true; // <-- Add this
+  bool isLoading = true;
 
   GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
@@ -57,7 +57,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       if (patient != null) {
         items = patient.glucoseRecords;
       }
-      isLoading = false; // <-- Set loading to false after data is loaded
+      isLoading = false;
     });
 
     if (thresholdDefault != null) {

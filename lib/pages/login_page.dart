@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
-                    'assets/glucolook-icon.png', // <-- Update this path to your actual app icon asset
+                    'assets/glucolook-icon.png',
                     width: 72,
                     height: 72,
                   ),
