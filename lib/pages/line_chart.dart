@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 
 class LineChartGraph extends StatefulWidget {
   final List<GlucoseRecord> records;
-  final ValueChanged<int>? onSpotTapped; // Add this
+  final ValueChanged<int>? onSpotTapped;
   const LineChartGraph({super.key, required this.records, this.onSpotTapped});
 
   @override
@@ -42,7 +42,6 @@ class _LineChartGraphState extends State<LineChartGraph> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Sort records by date for the chart (already done)
     final records = List<GlucoseRecord>.from(widget.records)
       ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -50,7 +49,6 @@ class _LineChartGraphState extends State<LineChartGraph> {
       return const SizedBox.shrink();
     }
 
-    // 2. Get the color for each record based on its value
     Color getColorForValue(double value) {
       // colorRanges must be sorted by value ascending
       for (final metric in colorRanges) {
@@ -61,13 +59,11 @@ class _LineChartGraphState extends State<LineChartGraph> {
       return colorRanges.last.color;
     }
 
-    // 3. Build the fill gradient colors (from left to right, low to high value)
     final List<Color> fillColors = [
       for (final record in records)
         getColorForValue(record.value).withOpacity(0.18),
     ];
 
-    // 4. Build color stops for smooth transition
     List<double> colorStops = [];
     if (fillColors.length == 1) {
       colorStops = [0.0, 1.0];
@@ -77,14 +73,6 @@ class _LineChartGraphState extends State<LineChartGraph> {
         (i) => i / (fillColors.length - 1),
       );
     }
-
-    // 5. Create the horizontal transparent gradient
-    final fillGradient = LinearGradient(
-      colors: fillColors,
-      stops: colorStops,
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-    );
 
     final minY =
         (records.map((e) => e.value).reduce((a, b) => a < b ? a : b) - 10);
@@ -231,8 +219,8 @@ class _LineChartGraphState extends State<LineChartGraph> {
                                 show: true,
                                 gradient: LinearGradient(
                                   colors: [
-                                    minColor, // Bottom color (lowest value)
-                                    maxColor, // Top color (highest value)
+                                    minColor,
+                                    maxColor,
                                   ],
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
@@ -269,7 +257,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40), // <-- Extra space at the end
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
