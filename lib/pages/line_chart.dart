@@ -253,6 +253,25 @@ class _LineChartGraphState extends State<LineChartGraph> {
                                 }
                               }
                             },
+                            touchTooltipData: LineTouchTooltipData(
+                              tooltipRoundedRadius: 8,
+                              fitInsideHorizontally: true,
+                              fitInsideVertically: true,
+                              getTooltipItems: (touchedSpots) {
+                                return touchedSpots.map((spot) {
+                                  return LineTooltipItem(
+                                    // You can customize the text here
+                                    '${spot.y.toStringAsFixed(1)} mg/dL',
+                                    const TextStyle(
+                                      color: Colors
+                                          .white, // Set a readable color for all tooltips
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                            ),
                           ),
                         ),
                       ),
