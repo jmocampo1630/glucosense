@@ -112,129 +112,174 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                 ),
               ),
             ),
+          if (!isLoading && items.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.list_alt, color: Colors.blueGrey, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Glucose Records",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueGrey[700],
+                        ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : items.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.analytics_outlined,
-                                size: 64, color: Colors.black26),
-                            SizedBox(height: 16),
+                                size: 80, color: Colors.blueGrey[200]),
+                            const SizedBox(height: 20),
                             Text(
                               'No glucose records found.',
                               style: TextStyle(
-                                  fontSize: 18, color: Colors.black54),
+                                  fontSize: 20,
+                                  color: Colors.blueGrey[400],
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Tap the + button to add your first record.',
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.blueGrey[300]),
                             ),
                           ],
                         ),
                       )
-                    : ListView.builder(
+                    : ListView.separated(
                         controller: _listController,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         itemCount: items.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final isSelected = index == selectedIndex;
-                          return Card(
-                            color: isSelected ? Colors.blue.shade50 : null,
-                            shape: isSelected
-                                ? RoundedRectangleBorder(
-                                    side: const BorderSide(
-                                        color: Colors.blue, width: 2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  )
-                                : null,
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 8.0),
-                              title: Text(items[index].name,
-                                  style: const TextStyle(
-                                      fontSize: 15.0,
-                                      fontWeight: FontWeight.bold)),
-                              subtitle: Text(
-                                  DateFormat('yyyy-MM-dd hh:mm a')
-                                      .format(items[index].date),
-                                  style: const TextStyle(fontSize: 14.0)),
-                              leading: SizedBox(
-                                width: 80,
-                                height: 50,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 60,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            items[index]
-                                                .value
-                                                .toStringAsFixed(1),
-                                            style: TextStyle(
-                                              fontSize: 17.0,
-                                              fontWeight: FontWeight.w900,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              letterSpacing: 0.5,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'mg/dL',
-                                            style: TextStyle(
-                                              fontSize: 11.0,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: 0.2,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Container(
-                                      width: 5,
-                                      height: 45,
-                                      decoration: BoxDecoration(
-                                        color: items[index].color,
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                    ),
-                                  ],
+                          final record = items[index];
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.blue.withOpacity(0.08)
+                                  : Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(14),
+                              border: isSelected
+                                  ? Border.all(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      width: 2)
+                                  : Border.all(
+                                      color: Colors.grey.withOpacity(0.15),
+                                      width: 1),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
                                 ),
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry<String>>[
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: Text('Delete'),
+                              ],
+                            ),
+                            child: ListTile(
+                              leading: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Make the value/unit column wider for alignment
+                                  SizedBox(
+                                    width:
+                                        56, // Adjust width as needed (e.g., 56 or 64)
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          record.value.toStringAsFixed(1),
+                                          style: TextStyle(
+                                            fontSize: 20.0,
+                                            fontWeight: FontWeight.w900,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'mg/dL',
+                                          style: TextStyle(
+                                            fontSize: 12.0,
+                                            color: Colors.grey[600],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  // Color bar in the middle
+                                  Container(
+                                    width: 7,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      color: record.color,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
                                   ),
                                 ],
-                                onSelected: (String value) {
-                                  if (value == 'delete') {
-                                    glucoseRecordDatabaseServices
-                                        .deleteGlucoseRecord(
-                                            widget.patientId, items[index].id);
-                                    setState(() {
-                                      items.remove(items[index]);
-                                    });
-                                  }
-                                },
+                              ),
+                              title: Text(
+                                record.name,
+                                style: const TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                DateFormat('yyyy-MM-dd hh:mm a')
+                                    .format(record.date),
+                                style: const TextStyle(fontSize: 14.0),
+                              ),
+                              trailing: SizedBox(
+                                width:
+                                    32, // You can adjust this value (e.g., 28, 32, 36)
+                                child: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, size: 20),
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'delete',
+                                      child: Text('Delete'),
+                                    ),
+                                  ],
+                                  onSelected: (String value) {
+                                    if (value == 'delete') {
+                                      glucoseRecordDatabaseServices
+                                          .deleteGlucoseRecord(
+                                              widget.patientId, record.id);
+                                      setState(() {
+                                        items.remove(record);
+                                      });
+                                    }
+                                  },
+                                  padding:
+                                      EdgeInsets.zero, // Remove extra padding
+                                ),
                               ),
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => GlucoseLevelDetail(
-                                          glucoseRecord: items[index])),
+                                    builder: (context) => GlucoseLevelDetail(
+                                        glucoseRecord: record),
+                                  ),
                                 );
                               },
                             ),
@@ -244,12 +289,12 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           openCamera();
         },
-        tooltip: 'Scan',
-        child: const Icon(Icons.add),
+        label: const Text('Scan'),
+        icon: const Icon(Icons.add),
       ),
     );
   }
