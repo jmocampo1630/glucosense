@@ -96,7 +96,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                       selectedIndex = listIndex;
                     });
                     _listController.animateTo(
-                      listIndex * 90.0,
+                      (listIndex * 90.0) - 100.0 < 0
+                          ? 0
+                          : (listIndex * 90.0) - 100.0,
                       duration: const Duration(milliseconds: 400),
                       curve: Curves.easeInOut,
                     );
@@ -158,8 +160,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                       )
                     : ListView.separated(
                         controller: _listController,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 8, bottom: 90),
                         itemCount: items.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
