@@ -322,6 +322,13 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _highlightTimer?.cancel();
+    _listController.dispose();
+    super.dispose();
+  }
+
   // Future _pickImageFromGallery() async {
   //   final returnImage =
   //       await ImagePicker().pickImage(source: ImageSource.gallery);
