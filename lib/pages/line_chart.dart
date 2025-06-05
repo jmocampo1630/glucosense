@@ -78,7 +78,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
         (records.map((e) => e.value).reduce((a, b) => a < b ? a : b) - 10);
     final minYClamped = minY < 0 ? 0.0 : minY;
     final maxY =
-        records.map((e) => e.value).reduce((a, b) => a > b ? a : b) + 50;
+        records.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.35;
 
     double getDynamicInterval(double min, double max) {
       final range = max - min;

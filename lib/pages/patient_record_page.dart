@@ -163,13 +163,14 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                         padding: const EdgeInsets.only(
                             left: 16, right: 16, top: 8, bottom: 90),
                         itemCount: items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final isSelected = index == selectedIndex;
                           final record = items[index];
                           return AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             curve: Curves.easeInOut,
+                            height: 84, // Fixed card height (adjust as needed)
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? Colors.blue.withOpacity(0.08)
@@ -191,99 +192,99 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                                 ),
                               ],
                             ),
-                            child: ListTile(
-                              leading: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Make the value/unit column wider for alignment
-                                  SizedBox(
-                                    width:
-                                        56, // Adjust width as needed (e.g., 56 or 64)
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          record.value.toStringAsFixed(1),
-                                          style: TextStyle(
-                                            fontSize: 20.0,
-                                            fontWeight: FontWeight.w900,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                            letterSpacing: 0.5,
+                            child: Center(
+                              // Ensures vertical alignment
+                              child: ListTile(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                leading: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 56,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            record.value.toStringAsFixed(1),
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.w900,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'mg/dL',
-                                          style: TextStyle(
-                                            fontSize: 12.0,
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.w500,
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'mg/dL',
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  // Color bar in the middle
-                                  Container(
-                                    width: 7,
-                                    height: 45,
-                                    decoration: BoxDecoration(
-                                      color: record.color,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              title: Text(
-                                record.name,
-                                style: const TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                DateFormat('yyyy-MM-dd hh:mm a')
-                                    .format(record.date),
-                                style: const TextStyle(fontSize: 14.0),
-                              ),
-                              trailing: SizedBox(
-                                width:
-                                    32, // You can adjust this value (e.g., 28, 32, 36)
-                                child: PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert, size: 20),
-                                  itemBuilder: (BuildContext context) =>
-                                      <PopupMenuEntry<String>>[
-                                    const PopupMenuItem<String>(
-                                      value: 'delete',
-                                      child: Text('Delete'),
+                                    const SizedBox(width: 10),
+                                    Container(
+                                      width: 7,
+                                      height: 45,
+                                      decoration: BoxDecoration(
+                                        color: record.color,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
                                     ),
                                   ],
-                                  onSelected: (String value) {
-                                    if (value == 'delete') {
-                                      glucoseRecordDatabaseServices
-                                          .deleteGlucoseRecord(
-                                              widget.patientId, record.id);
-                                      setState(() {
-                                        items.remove(record);
-                                      });
-                                    }
-                                  },
-                                  padding:
-                                      EdgeInsets.zero, // Remove extra padding
                                 ),
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GlucoseLevelDetail(
-                                        glucoseRecord: record),
+                                title: Text(
+                                  record.name,
+                                  style: const TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  DateFormat('yyyy-MM-dd hh:mm a')
+                                      .format(record.date),
+                                  style: const TextStyle(fontSize: 14.0),
+                                ),
+                                trailing: SizedBox(
+                                  width: 32,
+                                  child: PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert, size: 20),
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<String>>[
+                                      const PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Text('Delete'),
+                                      ),
+                                    ],
+                                    onSelected: (String value) {
+                                      if (value == 'delete') {
+                                        glucoseRecordDatabaseServices
+                                            .deleteGlucoseRecord(
+                                                widget.patientId, record.id);
+                                        setState(() {
+                                          items.remove(record);
+                                        });
+                                      }
+                                    },
+                                    padding: EdgeInsets.zero,
                                   ),
-                                );
-                              },
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => GlucoseLevelDetail(
+                                          glucoseRecord: record),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           );
                         },
