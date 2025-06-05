@@ -4,8 +4,9 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:intl/intl.dart';
 
 class LineChartGraph extends StatefulWidget {
-  const LineChartGraph({super.key, required this.records});
   final List<GlucoseRecord> records;
+  final ValueChanged<int>? onSpotTapped; // Add this
+  const LineChartGraph({super.key, required this.records, this.onSpotTapped});
 
   @override
   State<LineChartGraph> createState() => _LineChartGraphState();
@@ -171,6 +172,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                               color: Colors.blueAccent,
                               barWidth: 3,
                               isStrokeCapRound: true,
+                              showingIndicators: [], // optional, for highlight
                               belowBarData: BarAreaData(
                                 show: true,
                                 gradient: LinearGradient(
@@ -184,13 +186,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                               ),
                               dotData: FlDotData(
                                 show: true,
-                                getDotPainter: (spot, percent, bar, index) =>
-                                    FlDotCirclePainter(
-                                  radius: 4,
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                  strokeColor: Colors.blueAccent,
-                                ),
+                                checkToShowDot: (spot, barData) => true,
                               ),
                               shadow: const Shadow(
                                 color: Colors.black26,
@@ -199,6 +195,23 @@ class _LineChartGraphState extends State<LineChartGraph> {
                               ),
                             ),
                           ],
+                          lineTouchData: LineTouchData(
+                            touchCallback: (event, response) {
+                              if (event is FlTapUpEvent &&
+                                  response != null &&
+                                  response.lineBarSpots != null &&
+                                  response.lineBarSpots!.isNotEmpty) {
+                                final idx =
+                                    response.lineBarSpots!.first.x.toInt() -
+                                        1; // adjust if you offset x
+                                if (widget.onSpotTapped != null &&
+                                    idx >= 0 &&
+                                    idx < widget.records.length) {
+                                  widget.onSpotTapped!(idx);
+                                }
+                              }
+                            },
+                          ),
                         ),
                       ),
                     ),

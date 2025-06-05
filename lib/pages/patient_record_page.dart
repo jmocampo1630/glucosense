@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -9,7 +10,7 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/glucose_level_detail.dart';
-import 'package:glucolook/pages/line_chart.dart'; // Add this import
+import 'package:glucolook/pages/line_chart.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
@@ -33,6 +34,8 @@ class PatientRecordPage extends StatefulWidget {
 }
 
 class _PatientRecordPageState extends State<PatientRecordPage> {
+  final ScrollController _listController = ScrollController();
+  int? selectedIndex;
   List<GlucoseRecord> items = [];
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
@@ -41,6 +44,8 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
 
   GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
+
+  Timer? _highlightTimer;
 
   @override
   void initState() {
@@ -83,7 +88,28 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: SizedBox(
                 height: 220,
-                child: LineChartGraph(records: items),
+                child: LineChartGraph(
+                  records: items.reversed.toList(), // ASC for chart
+                  onSpotTapped: (int idx) {
+                    final listIndex = items.length - 1 - idx;
+                    setState(() {
+                      selectedIndex = listIndex;
+                    });
+                    _listController.animateTo(
+                      listIndex * 90.0,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                    _highlightTimer?.cancel();
+                    _highlightTimer = Timer(const Duration(seconds: 1), () {
+                      if (mounted) {
+                        setState(() {
+                          selectedIndex = null;
+                        });
+                      }
+                    });
+                  },
+                ),
               ),
             ),
           Expanded(
@@ -106,9 +132,19 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                         ),
                       )
                     : ListView.builder(
+                        controller: _listController,
                         itemCount: items.length,
                         itemBuilder: (context, index) {
+                          final isSelected = index == selectedIndex;
                           return Card(
+                            color: isSelected ? Colors.blue.shade50 : null,
+                            shape: isSelected
+                                ? RoundedRectangleBorder(
+                                    side: BorderSide(
+                                        color: Colors.blue, width: 2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  )
+                                : null,
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 8.0, vertical: 8.0),
