@@ -158,136 +158,147 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                           ],
                         ),
                       )
-                    : ListView.separated(
-                        controller: _listController,
-                        padding: const EdgeInsets.only(
-                            left: 16, right: 16, top: 8, bottom: 90),
-                        itemCount: items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final isSelected = index == selectedIndex;
-                          final record = items[index];
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeInOut,
-                            height: 84, // Fixed card height (adjust as needed)
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.blue.withOpacity(0.08)
-                                  : Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(14),
-                              border: isSelected
-                                  ? Border.all(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      width: 2)
-                                  : Border.all(
-                                      color: Colors.grey.withOpacity(0.15),
-                                      width: 1),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              // Ensures vertical alignment
-                              child: ListTile(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                leading: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: 56,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            record.value.toStringAsFixed(1),
-                                            style: TextStyle(
-                                              fontSize: 20.0,
-                                              fontWeight: FontWeight.w900,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              letterSpacing: 0.5,
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          await loadData();
+                        },
+                        child: ListView.separated(
+                          controller: _listController,
+                          physics:
+                              const AlwaysScrollableScrollPhysics(), // <-- Add this line
+                          padding: const EdgeInsets.only(
+                              left: 16, right: 16, top: 8, bottom: 90),
+                          itemCount: items.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final isSelected = index == selectedIndex;
+                            final record = items[index];
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              height: 84,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.blue.withOpacity(0.08)
+                                    : Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(14),
+                                border: isSelected
+                                    ? Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        width: 2)
+                                    : Border.all(
+                                        color: Colors.grey.withOpacity(0.15),
+                                        width: 1),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: ListTile(
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  leading: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 56,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              record.value.toStringAsFixed(1),
+                                              style: TextStyle(
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.w900,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'mg/dL',
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'mg/dL',
+                                              style: TextStyle(
+                                                fontSize: 12.0,
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Container(
-                                      width: 7,
-                                      height: 45,
-                                      decoration: BoxDecoration(
-                                        color: record.color,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                title: Text(
-                                  record.name,
-                                  style: const TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  DateFormat('yyyy-MM-dd hh:mm a')
-                                      .format(record.date),
-                                  style: const TextStyle(fontSize: 14.0),
-                                ),
-                                trailing: SizedBox(
-                                  width: 32,
-                                  child: PopupMenuButton<String>(
-                                    icon: const Icon(Icons.more_vert, size: 20),
-                                    itemBuilder: (BuildContext context) =>
-                                        <PopupMenuEntry<String>>[
-                                      const PopupMenuItem<String>(
-                                        value: 'delete',
-                                        child: Text('Delete'),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        width: 7,
+                                        height: 45,
+                                        decoration: BoxDecoration(
+                                          color: record.color,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
                                       ),
                                     ],
-                                    onSelected: (String value) {
-                                      if (value == 'delete') {
-                                        glucoseRecordDatabaseServices
-                                            .deleteGlucoseRecord(
-                                                widget.patientId, record.id);
-                                        setState(() {
-                                          items.remove(record);
-                                        });
-                                      }
-                                    },
-                                    padding: EdgeInsets.zero,
                                   ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => GlucoseLevelDetail(
-                                          glucoseRecord: record),
+                                  title: Text(
+                                    record.name,
+                                    style: const TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text(
+                                    DateFormat('yyyy-MM-dd hh:mm a')
+                                        .format(record.date),
+                                    style: const TextStyle(fontSize: 14.0),
+                                  ),
+                                  trailing: SizedBox(
+                                    width: 32,
+                                    child: PopupMenuButton<String>(
+                                      icon:
+                                          const Icon(Icons.more_vert, size: 20),
+                                      itemBuilder: (BuildContext context) =>
+                                          <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: 'delete',
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
+                                      onSelected: (String value) {
+                                        if (value == 'delete') {
+                                          glucoseRecordDatabaseServices
+                                              .deleteGlucoseRecord(
+                                                  widget.patientId, record.id);
+                                          setState(() {
+                                            items.remove(record);
+                                          });
+                                        }
+                                      },
+                                      padding: EdgeInsets.zero,
                                     ),
-                                  );
-                                },
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            GlucoseLevelDetail(
+                                                glucoseRecord: record),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
           ),
         ],
