@@ -142,6 +142,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
+                    const SizedBox(width: 20),
                     SizedBox(
                       width: chartWidth,
                       child: LineChart(
@@ -244,8 +245,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                                   response.lineBarSpots != null &&
                                   response.lineBarSpots!.isNotEmpty) {
                                 final idx =
-                                    response.lineBarSpots!.first.x.toInt() -
-                                        1; // adjust if you offset x
+                                    response.lineBarSpots!.first.x.toInt();
                                 if (widget.onSpotTapped != null &&
                                     idx >= 0 &&
                                     idx < widget.records.length) {
@@ -257,7 +257,6 @@ class _LineChartGraphState extends State<LineChartGraph> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40),
                   ],
                 ),
               ),

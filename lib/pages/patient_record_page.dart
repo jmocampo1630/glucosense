@@ -140,7 +140,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                             color: isSelected ? Colors.blue.shade50 : null,
                             shape: isSelected
                                 ? RoundedRectangleBorder(
-                                    side: BorderSide(
+                                    side: const BorderSide(
                                         color: Colors.blue, width: 2),
                                     borderRadius: BorderRadius.circular(8),
                                   )
