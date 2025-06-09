@@ -74,7 +74,15 @@ class PatientDatabaseServices {
 
   Future<void> updatePatient(String id, Patient updatedPatient) async {
     try {
-      await _patientsRef.child(id).update(updatedPatient.toJson());
+      // Get current user's UID
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('User not logged in');
+
+      // Add UID to patient
+      final patientWithUid = updatedPatient.copyWith(
+          uid: uid); // You need a copyWith method or set patient.uid = uid
+
+      await _patientsRef.child(id).update(patientWithUid.toJson());
     } catch (e) {
       if (kDebugMode) {
         print('Error updating glucose record: $e');

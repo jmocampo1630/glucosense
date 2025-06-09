@@ -3,7 +3,9 @@ import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/services/patient.services.dart';
 
 class AddPatientDialog extends StatefulWidget {
-  const AddPatientDialog({super.key});
+  final Patient? patient; // <-- Add this
+
+  const AddPatientDialog({super.key, this.patient}); // <-- Accept patient
 
   @override
   AddPatientDialogState createState() => AddPatientDialogState();
@@ -19,18 +21,32 @@ class AddPatientDialogState extends State<AddPatientDialog> {
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
 
   @override
+  void initState() {
+    super.initState();
+    // If editing, prefill fields
+    if (widget.patient != null) {
+      _patientName = widget.patient!.name;
+      _selectedGender = widget.patient!.gender;
+      selectedDate = widget.patient!.dateOfBirth;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.person_add_alt_1, color: Color(0xFF37B5B6)),
-          SizedBox(width: 8),
-          Text('Add Patient'),
+          Icon(
+            widget.patient == null ? Icons.person_add_alt_1 : Icons.edit,
+            color: const Color(0xFF37B5B6),
+          ),
+          const SizedBox(width: 8),
+          Text(widget.patient == null ? 'Add Patient' : 'Edit Patient'),
         ],
       ),
       content: SizedBox(
-        width: 380, // Make dialog wider
+        width: 380,
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Form(
@@ -40,6 +56,7 @@ class AddPatientDialogState extends State<AddPatientDialog> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   TextFormField(
+                    initialValue: _patientName,
                     decoration: const InputDecoration(
                       labelText: 'Name',
                       prefixIcon: Icon(Icons.person_outline),
@@ -148,7 +165,8 @@ class AddPatientDialogState extends State<AddPatientDialog> {
                                         strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Icon(Icons.check),
-                            label: const Text('Submit'),
+                            label: Text(
+                                widget.patient == null ? 'Submit' : 'Save'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF37B5B6),
                               foregroundColor: Colors.white,
@@ -163,15 +181,30 @@ class AddPatientDialogState extends State<AddPatientDialog> {
                                     if (_formKey.currentState!.validate()) {
                                       _formKey.currentState!.save();
                                       setState(() => isLoading = true);
-                                      Patient patient = Patient(
-                                        id: '',
-                                        name: _patientName!,
-                                        gender: _selectedGender!,
-                                        dateOfBirth: selectedDate!,
-                                        glucoseRecords: [],
-                                      );
-                                      await patientDatabaseServices
-                                          .addPatient(patient);
+                                      if (widget.patient == null) {
+                                        // Add new patient
+                                        Patient patient = Patient(
+                                          id: '',
+                                          name: _patientName!,
+                                          gender: _selectedGender!,
+                                          dateOfBirth: selectedDate!,
+                                          glucoseRecords: [],
+                                        );
+                                        await patientDatabaseServices
+                                            .addPatient(patient);
+                                      } else {
+                                        // Edit existing patient
+                                        Patient updated = Patient(
+                                          id: widget.patient!.id,
+                                          name: _patientName!,
+                                          gender: _selectedGender!,
+                                          dateOfBirth: selectedDate!,
+                                          glucoseRecords:
+                                              widget.patient!.glucoseRecords,
+                                        );
+                                        await patientDatabaseServices
+                                            .updatePatient(updated.id, updated);
+                                      }
                                       setState(() => isLoading = false);
                                       Navigator.of(context).pop(true);
                                     }

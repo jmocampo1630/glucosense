@@ -193,12 +193,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                     itemBuilder: (BuildContext context) =>
                                         <PopupMenuEntry<String>>[
                                       const PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: Text('Edit'),
+                                      ),
+                                      const PopupMenuItem<String>(
                                         value: 'delete',
                                         child: Text('Delete'),
                                       ),
                                     ],
-                                    onSelected: (String value) {
-                                      if (value == 'delete') {
+                                    onSelected: (String value) async {
+                                      if (value == 'edit') {
+                                        final result = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) =>
+                                              AddPatientDialog(
+                                            patient: patients[
+                                                index], // Pass the patient to edit
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          _loadPatients();
+                                        }
+                                      } else if (value == 'delete') {
                                         deleteDialog(
                                             context, patients[index].id);
                                       }
