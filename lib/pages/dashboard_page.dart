@@ -4,27 +4,23 @@ import '../widgets/summary_card.dart';
 
 class DashboardPage extends StatelessWidget {
   final Patient? patient;
-  const DashboardPage({super.key, required this.patient});
+  final Future<void> Function()? onRecordsChanged; // <-- Add this line
+
+  const DashboardPage({
+    super.key,
+    required this.patient,
+    this.onRecordsChanged, // <-- Add this line
+  });
 
   static const double cardSpacing = 8;
   static const double cardPadding = 14;
 
   @override
   Widget build(BuildContext context) {
-    // Example fallback values if patient is null
-    final name = patient?.name ?? 'Patient Name';
-    final age = patient?.dateOfBirth != null
-        ? calculateAge(patient!.dateOfBirth).toString()
-        : '--';
-    final sex = patient?.gender ?? '--';
-    final lastRecord = (patient?.glucoseRecords.isNotEmpty ?? false)
-        ? patient!.glucoseRecords.first.date.toString().split(' ').first
-        : '--';
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(cardPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return RefreshIndicator(
+      onRefresh: onRecordsChanged ?? () async {},
+      child: ListView(
+        padding: const EdgeInsets.all(cardPadding),
         children: [
           Card(
             elevation: 0,
@@ -65,7 +61,7 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name,
+                          patient?.name ?? 'Patient Name',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -79,7 +75,7 @@ class DashboardPage extends StatelessWidget {
                                 size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Age: $age',
+                              'Age: ${patient?.dateOfBirth != null ? calculateAge(patient!.dateOfBirth).toString() : '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -87,7 +83,7 @@ class DashboardPage extends StatelessWidget {
                             const Icon(Icons.wc, size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Sex: $sex',
+                              'Sex: ${patient?.gender ?? '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -100,7 +96,7 @@ class DashboardPage extends StatelessWidget {
                                 size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Last Record: $lastRecord',
+                              'Last Record: ${(patient?.glucoseRecords.isNotEmpty ?? false) ? patient!.glucoseRecords.first.date.toString().split(' ').first : '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),

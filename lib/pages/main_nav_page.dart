@@ -50,19 +50,26 @@ class _MainNavPageState extends State<MainNavPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title.toUpperCase()),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final pages = [
-      DashboardPage(patient: patient),
+      DashboardPage(
+        patient: patient,
+        onRecordsChanged: loadPatient,
+      ),
       PatientRecordPage(
         title: widget.title,
         patientId: widget.patientId,
         camera: widget.camera,
         patient: patient,
-        onRecordsChanged: loadPatient, // Optional: reload when records change
+        onRecordsChanged: loadPatient,
       ),
     ];
 
@@ -71,7 +78,10 @@ class _MainNavPageState extends State<MainNavPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title.toUpperCase()),
       ),
-      body: pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
