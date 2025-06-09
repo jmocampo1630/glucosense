@@ -44,11 +44,10 @@ class SummaryCard extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              if (unit.isNotEmpty)
-                Text(
-                  unit,
-                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                ),
+              Text(
+                unit,
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
             ],
           ),
         ),

@@ -32,7 +32,7 @@ class PatientRecordPage extends StatefulWidget {
   final CameraDescription camera;
   final String patientId;
   final Patient? patient;
-  final Future<void> Function()? onRecordsChanged; // <-- Update type here
+  final Future<void> Function()? onRecordsChanged;
 
   @override
   State<PatientRecordPage> createState() => _PatientRecordPageState();
@@ -45,7 +45,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   final imageSize = const Size(256, 160);
   PaletteGenerator? paletteGenerator;
   Color defaultColor = Colors.white;
-  bool isLoading = false; // No need to load, already loaded
 
   GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
@@ -55,7 +54,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   @override
   void initState() {
     super.initState();
-    // No loadData here, use widget.patient
     if (widget.patient != null) {
       items = List<GlucoseRecord>.from(widget.patient!.glucoseRecords);
       items.sort((a, b) => b.date.compareTo(a.date));
@@ -68,7 +66,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       onRefresh: widget.onRecordsChanged ?? () async {},
       child: Column(
         children: [
-          // Graph stays fixed at the top
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: SizedBox(
@@ -99,7 +96,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               ),
             ),
           ),
-          // "Glucose Records" header stays fixed below the graph
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
@@ -116,7 +112,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
               ],
             ),
           ),
-          // The rest scrolls
           Expanded(
             child: items.isEmpty
                 ? ListView(
@@ -156,7 +151,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                     padding: const EdgeInsets.only(
                         left: 0, right: 0, top: 0, bottom: 90),
                     children: [
-                      // REMOVE the header from here!
                       ...List.generate(items.length, (index) {
                         final isSelected = index == selectedIndex;
                         final record = items[index];

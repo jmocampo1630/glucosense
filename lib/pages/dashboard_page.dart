@@ -5,12 +5,12 @@ import '../widgets/summary_card.dart';
 
 class DashboardPage extends StatelessWidget {
   final Patient? patient;
-  final Future<void> Function()? onRecordsChanged; // <-- Add this line
+  final Future<void> Function()? onRecordsChanged;
 
   const DashboardPage({
     super.key,
     required this.patient,
-    this.onRecordsChanged, // <-- Add this line
+    this.onRecordsChanged,
   });
 
   static const double cardSpacing = 8;
@@ -110,7 +110,7 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: cardSpacing + 6),
+          const SizedBox(height: cardSpacing),
           Row(
             children: [
               SummaryCard(
