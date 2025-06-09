@@ -1,7 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:glucolook/enums/toast_type.dart';
+import 'package:glucolook/modals/scan_glucose_record_modal.dart';
+import 'package:glucolook/modals/submit_cancel_dialog.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
+import 'package:glucolook/services/color_generator.services.dart';
+import 'package:glucolook/services/error.services.dart';
 import 'dashboard_page.dart';
 import 'patient_record_page.dart';
 import '../services/patient.services.dart';
@@ -26,6 +34,7 @@ class _MainNavPageState extends State<MainNavPage> {
   int _selectedIndex = 0;
   bool isLoading = true;
   Patient? patient;
+  List<GlucoseRecord> items = [];
 
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
 
@@ -44,6 +53,7 @@ class _MainNavPageState extends State<MainNavPage> {
     if (!mounted) return;
     setState(() {
       patient = loadedPatient;
+      items = List<GlucoseRecord>.from(patient!.glucoseRecords);
       isLoading = false;
     });
   }
@@ -82,15 +92,7 @@ class _MainNavPageState extends State<MainNavPage> {
       body: pages[_selectedIndex],
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final imagePath = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CameraPage(camera: widget.camera),
-            ),
-          );
-          if (imagePath != null) {
-            // Handle the scanned image path if needed
-          }
+          openCamera();
         },
         tooltip: 'Scan Glucose',
         child: const Icon(Icons.camera_enhance),
@@ -111,5 +113,66 @@ class _MainNavPageState extends State<MainNavPage> {
         ],
       ),
     );
+  }
+
+  Future<void> openCamera() async {
+    final imagePath = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CameraPage(camera: widget.camera)),
+    );
+    if (imagePath != null) {
+      updateRecords(File(imagePath));
+    }
+  }
+
+  void updateRecords(File? image) async {
+    if (image == null) return;
+    GlucoseRecord? record = await generateColor(image);
+    if (!mounted) return;
+    if (record != null) {
+      final isSave = await showDialog<bool>(
+          context: context,
+          builder: (context) => ScanGlucoseRecordModal(
+                glucoseRecord: record,
+                image: image,
+              ));
+
+      if (!(isSave != null && isSave)) {
+        openCamera();
+        return;
+      }
+
+      String? id = await patientDatabaseServices.addGlucoseRecordToPatient(
+          widget.patientId, record);
+      if (id != null) {
+        record.id = id;
+        items.add(record);
+      }
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SubmitCancelDialog(
+            title: 'Scan Failed',
+            content: 'Do you want to try again?',
+            onSubmit: () {
+              Navigator.of(context).pop();
+              openCamera();
+            },
+            onCancel: () {
+              Navigator.of(context).pop();
+            },
+            submitText: 'Yes',
+          );
+        },
+      );
+    }
+    setState(() {
+      if (record != null) {
+        items.sort((a, b) => b.date.compareTo(a.date));
+        showToastWarning("Scan successful!", ToastType.success);
+      }
+    });
   }
 }

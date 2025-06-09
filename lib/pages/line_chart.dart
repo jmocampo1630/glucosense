@@ -59,20 +59,19 @@ class _LineChartGraphState extends State<LineChartGraph> {
       return colorRanges.last.color;
     }
 
-    final List<Color> fillColors = [
-      for (final record in records)
-        getColorForValue(record.value).withOpacity(0.18),
+    // Prepare the colors for the line gradient
+    List<Color> lineColors = [
+      for (final record in records) getColorForValue(record.value)
     ];
-
-    List<double> colorStops = [];
-    if (fillColors.length == 1) {
-      colorStops = [0.0, 1.0];
-    } else {
-      colorStops = List.generate(
-        fillColors.length,
-        (i) => i / (fillColors.length - 1),
-      );
+    if (lineColors.length == 1) {
+      lineColors = [lineColors.first, lineColors.first];
     }
+
+    // Generate color stops to match the number of colors
+    List<double> colorStops = List.generate(
+      lineColors.length,
+      (i) => i / (lineColors.length - 1),
+    );
 
     final minY =
         (records.map((e) => e.value).reduce((a, b) => a < b ? a : b) - 10);
@@ -208,10 +207,7 @@ class _LineChartGraphState extends State<LineChartGraph> {
                               barWidth: 3,
                               isStrokeCapRound: true,
                               gradient: LinearGradient(
-                                colors: [
-                                  for (final record in records)
-                                    getColorForValue(record.value)
-                                ],
+                                colors: lineColors,
                                 stops: colorStops,
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
