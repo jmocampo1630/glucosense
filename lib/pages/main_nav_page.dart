@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/pages/camera_page.dart';
 import 'dashboard_page.dart';
 import 'patient_record_page.dart';
 import '../services/patient.services.dart';
@@ -78,10 +79,23 @@ class _MainNavPageState extends State<MainNavPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title.toUpperCase()),
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: pages,
+      body: pages[_selectedIndex],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final imagePath = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CameraPage(camera: widget.camera),
+            ),
+          );
+          if (imagePath != null) {
+            // Handle the scanned image path if needed
+          }
+        },
+        tooltip: 'Scan Glucose',
+        child: const Icon(Icons.camera_enhance),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),

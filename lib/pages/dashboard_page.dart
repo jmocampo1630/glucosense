@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glucolook/models/glucose_record.model.dart';
 import '../models/patient.model.dart';
 import '../widgets/summary_card.dart';
 
@@ -61,7 +62,7 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          patient?.name ?? 'Patient Name',
+                          (patient?.name ?? 'Patient Name').toUpperCase(),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -96,7 +97,7 @@ class DashboardPage extends StatelessWidget {
                                 size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Last Record: ${(patient?.glucoseRecords.isNotEmpty ?? false) ? patient!.glucoseRecords.first.date.toString().split(' ').first : '--'}',
+                              'Last Record: ${(patient?.glucoseRecords.isNotEmpty ?? false) ? getLatestRecord(patient!.glucoseRecords)!.date.toString().split(' ').first : '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -115,7 +116,7 @@ class DashboardPage extends StatelessWidget {
               SummaryCard(
                 title: 'Latest',
                 value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? patient!.glucoseRecords.first.value.toString()
+                    ? getLatestRecord(patient!.glucoseRecords)!.value.toString()
                     : '--',
                 unit: 'mg/dL',
                 color: Colors.blue.shade50,
@@ -126,14 +127,9 @@ class DashboardPage extends StatelessWidget {
               SummaryCard(
                 title: 'Avg (7d)',
                 value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? (patient!.glucoseRecords
-                                .take(7)
-                                .map((e) => e.value)
-                                .fold<double>(0, (a, b) => a + b) /
-                            (patient!.glucoseRecords.length < 7
-                                ? patient!.glucoseRecords.length
-                                : 7))
-                        .toStringAsFixed(1)
+                    ? (calculate7DayAverage(patient!.glucoseRecords)
+                            ?.toStringAsFixed(1) ??
+                        '--')
                     : '--',
                 unit: 'mg/dL',
                 color: Colors.green.shade50,
@@ -188,6 +184,12 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
+
+  GlucoseRecord? getLatestRecord(List<GlucoseRecord> records) {
+    if (records.isEmpty) return null;
+    records.sort((a, b) => b.date.compareTo(a.date));
+    return records.first;
+  }
 }
 
 int calculateAge(DateTime dob) {
@@ -201,4 +203,21 @@ int calculateAge(DateTime dob) {
   }
 
   return age;
+}
+
+double? calculate7DayAverage(List<GlucoseRecord> records) {
+  if (records.isEmpty) return null;
+  final now = DateTime.now();
+  final sevenDaysAgo =
+      DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
+  final filtered = records.where((e) {
+    final date = DateTime(e.date.year, e.date.month, e.date.day);
+    return date.isAtSameMomentAs(sevenDaysAgo) ||
+        (date.isAfter(sevenDaysAgo) &&
+            date.isBefore(now.add(const Duration(days: 1))));
+  }).toList();
+  if (filtered.isEmpty) return null;
+  final avg = filtered.map((e) => e.value).fold<double>(0, (a, b) => a + b) /
+      filtered.length;
+  return avg;
 }
