@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
+import '../models/patient.model.dart';
 import '../widgets/summary_card.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final Patient? patient;
+  const DashboardPage({super.key, required this.patient});
 
   static const double cardSpacing = 8;
   static const double cardPadding = 14;
 
   @override
   Widget build(BuildContext context) {
+    // Example fallback values if patient is null
+    final name = patient?.name ?? 'Patient Name';
+    final age = patient?.dateOfBirth != null
+        ? calculateAge(patient!.dateOfBirth).toString()
+        : '--';
+    final sex = patient?.gender ?? '--';
+    final lastRecord = (patient?.glucoseRecords.isNotEmpty ?? false)
+        ? patient!.glucoseRecords.first.date.toString().split(' ').first
+        : '--';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Patient Info Card using the same style as SummaryCard
           Card(
             elevation: 0,
             color: Colors.blue.shade50,
@@ -49,48 +60,49 @@ class DashboardPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Patient Name',
-                          style: TextStyle(
+                          name,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.2,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.cake, size: 16, color: Colors.grey),
-                            SizedBox(width: 4),
+                            const Icon(Icons.cake,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
                             Text(
-                              'Age: 45',
-                              style:
-                                  TextStyle(fontSize: 15, color: Colors.grey),
+                              'Age: $age',
+                              style: const TextStyle(
+                                  fontSize: 15, color: Colors.grey),
                             ),
-                            SizedBox(width: 16),
-                            Icon(Icons.wc, size: 16, color: Colors.grey),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 16),
+                            const Icon(Icons.wc, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
                             Text(
-                              'Sex: Female',
-                              style:
-                                  TextStyle(fontSize: 15, color: Colors.grey),
+                              'Sex: $sex',
+                              style: const TextStyle(
+                                  fontSize: 15, color: Colors.grey),
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.calendar_today,
+                            const Icon(Icons.calendar_today,
                                 size: 16, color: Colors.grey),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              'Last Record: 2024-06-09',
-                              style:
-                                  TextStyle(fontSize: 15, color: Colors.grey),
+                              'Last Record: $lastRecord',
+                              style: const TextStyle(
+                                  fontSize: 15, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -102,12 +114,13 @@ class DashboardPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: cardSpacing + 6),
-          // Summary Cards Row
           Row(
             children: [
               SummaryCard(
                 title: 'Latest',
-                value: '120',
+                value: (patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? patient!.glucoseRecords.first.value.toString()
+                    : '--',
                 unit: 'mg/dL',
                 color: Colors.blue.shade50,
                 icon: Icons.bolt,
@@ -116,7 +129,16 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Avg (7d)',
-                value: '110',
+                value: (patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? (patient!.glucoseRecords
+                                .take(7)
+                                .map((e) => e.value)
+                                .fold<double>(0, (a, b) => a + b) /
+                            (patient!.glucoseRecords.length < 7
+                                ? patient!.glucoseRecords.length
+                                : 7))
+                        .toStringAsFixed(1)
+                    : '--',
                 unit: 'mg/dL',
                 color: Colors.green.shade50,
                 icon: Icons.show_chart,
@@ -125,7 +147,7 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Records',
-                value: '42',
+                value: (patient?.glucoseRecords.length ?? 0).toString(),
                 unit: '',
                 color: Colors.grey.shade100,
                 icon: Icons.list_alt,
@@ -134,12 +156,17 @@ class DashboardPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: cardSpacing),
-          // High & Low Cards Row
           Row(
             children: [
               SummaryCard(
                 title: 'High',
-                value: '180',
+                value: (patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? patient!.glucoseRecords
+                        .map((e) => e.value)
+                        .fold<double>(
+                            double.negativeInfinity, (a, b) => a > b ? a : b)
+                        .toStringAsFixed(1)
+                    : '--',
                 unit: 'mg/dL',
                 color: Colors.red.shade50,
                 icon: Icons.arrow_upward,
@@ -148,7 +175,12 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Low',
-                value: '70',
+                value: (patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? patient!.glucoseRecords
+                        .map((e) => e.value)
+                        .fold<double>(double.infinity, (a, b) => a < b ? a : b)
+                        .toStringAsFixed(1)
+                    : '--',
                 unit: 'mg/dL',
                 color: Colors.orange.shade50,
                 icon: Icons.arrow_downward,
@@ -156,9 +188,21 @@ class DashboardPage extends StatelessWidget {
               ),
             ],
           ),
-          // Add more cards/widgets below as needed
         ],
       ),
     );
   }
+}
+
+int calculateAge(DateTime dob) {
+  DateTime today = DateTime.now();
+  int age = today.year - dob.year;
+
+  // Adjust age if birthday hasn't occurred yet this year
+  if (today.month < dob.month ||
+      (today.month == dob.month && today.day < dob.day)) {
+    age--;
+  }
+
+  return age;
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:glucolook/models/patient.model.dart';
 import 'dashboard_page.dart';
 import 'patient_record_page.dart';
+import '../services/patient.services.dart';
 
 class MainNavPage extends StatefulWidget {
   final String title;
@@ -21,15 +23,46 @@ class MainNavPage extends StatefulWidget {
 
 class _MainNavPageState extends State<MainNavPage> {
   int _selectedIndex = 0;
+  bool isLoading = true;
+  Patient? patient;
+
+  PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
+
+  @override
+  void initState() {
+    super.initState();
+    loadPatient();
+  }
+
+  Future<void> loadPatient() async {
+    setState(() {
+      isLoading = true;
+    });
+    final loadedPatient =
+        await patientDatabaseServices.getPatientById(widget.patientId);
+    if (!mounted) return;
+    setState(() {
+      patient = loadedPatient;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final pages = [
-      const DashboardPage(),
+      DashboardPage(patient: patient),
       PatientRecordPage(
         title: widget.title,
         patientId: widget.patientId,
         camera: widget.camera,
+        patient: patient,
+        onRecordsChanged: loadPatient, // Optional: reload when records change
       ),
     ];
 
