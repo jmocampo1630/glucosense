@@ -59,11 +59,12 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
     Patient? patient =
         await patientDatabaseServices.getPatientById(widget.patientId);
 
+    if (!mounted) return;
+
     setState(() {
       if (patient != null) {
         items = patient.glucoseRecords;
-        items.sort(
-            (a, b) => b.date.compareTo(a.date)); // Sort descending by date
+        items.sort((a, b) => b.date.compareTo(a.date));
       }
       isLoading = false;
     });
@@ -77,10 +78,6 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title.toUpperCase()),
-      ),
       body: Column(
         children: [
           if (!isLoading && items.isNotEmpty)
@@ -164,8 +161,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                         },
                         child: ListView.separated(
                           controller: _listController,
-                          physics:
-                              const AlwaysScrollableScrollPhysics(), // <-- Add this line
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.only(
                               left: 16, right: 16, top: 8, bottom: 90),
                           itemCount: items.length,

@@ -5,7 +5,7 @@ import 'package:glucolook/modals/add_patient_modal.dart';
 import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/modals/terms_modal.dart';
 import 'package:glucolook/models/patient.model.dart';
-import 'package:glucolook/pages/patient_record_page.dart';
+import 'package:glucolook/pages/main_nav_page.dart';
 import 'package:glucolook/pages/settings_page.dart';
 import 'package:glucolook/services/patient.services.dart';
 import 'package:intl/intl.dart';
@@ -181,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => PatientRecordPage(
+                                        builder: (context) => MainNavPage(
                                           title: patients[index].name,
                                           patientId: patients[index].id,
                                           camera: widget.camera,
