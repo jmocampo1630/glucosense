@@ -73,6 +73,38 @@ class _GlucoseLevelDetailState extends State<GlucoseLevelDetail> {
                     const SizedBox(height: 28),
                     Divider(thickness: 1.2, color: Colors.grey[300]),
                     const SizedBox(height: 18),
+                    // Notes Section
+                    if (widget.glucoseRecord.description.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          const Icon(Icons.note_alt, color: Color(0xFF37B5B6)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Notes',
+                            style: TextStyle(
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.glucoseRecord.description,
+                          style: const TextStyle(
+                            fontSize: 15.0,
+                            color: Colors.black54,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Divider(thickness: 1.2, color: Colors.grey[300]),
+                      const SizedBox(height: 18),
+                    ],
                     Row(
                       children: [
                         const Icon(Icons.tips_and_updates,

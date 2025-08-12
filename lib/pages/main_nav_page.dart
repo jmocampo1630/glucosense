@@ -131,23 +131,33 @@ class _MainNavPageState extends State<MainNavPage> {
     GlucoseRecord? record = await generateColor(image);
     if (!mounted) return;
     if (record != null) {
-      final isSave = await showDialog<bool>(
+      final result = await showDialog<Object?>(
           context: context,
           builder: (context) => ScanGlucoseRecordModal(
                 glucoseRecord: record,
                 image: image,
               ));
 
-      if (!(isSave != null && isSave)) {
+      // Handle the result - if it's false or null, retry
+      if (result == false || result == null) {
         openCamera();
         return;
       }
 
+      // If result is a GlucoseRecord, use it; otherwise use original record
+      GlucoseRecord recordToSave = result is GlucoseRecord ? result : record;
+
       String? id = await patientDatabaseServices.addGlucoseRecordToPatient(
-          widget.patientId, record);
+          widget.patientId, recordToSave);
       if (id != null) {
-        record.id = id;
-        items.add(record);
+        recordToSave.id = id;
+        items.add(recordToSave);
+        items.sort((a, b) => b.date.compareTo(a.date));
+
+        // Refresh patient data to update both Dashboard and PatientRecord pages
+        await loadPatient();
+
+        showToastWarning("Scan successful!", ToastType.success);
       }
     } else {
       showDialog(
@@ -168,11 +178,5 @@ class _MainNavPageState extends State<MainNavPage> {
         },
       );
     }
-    setState(() {
-      if (record != null) {
-        items.sort((a, b) => b.date.compareTo(a.date));
-        showToastWarning("Scan successful!", ToastType.success);
-      }
-    });
   }
 }
