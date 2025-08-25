@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/resources/components/bullet_list.dart';
 import 'package:glucolook/services/color_generator.services.dart';
+import 'package:glucolook/widgets/tags_display_widget.dart';
 
 class GlucoseLevelDetail extends StatefulWidget {
   const GlucoseLevelDetail({super.key, required this.glucoseRecord});
@@ -73,6 +74,56 @@ class _GlucoseLevelDetailState extends State<GlucoseLevelDetail> {
                     const SizedBox(height: 28),
                     Divider(thickness: 1.2, color: Colors.grey[300]),
                     const SizedBox(height: 18),
+                    // Tags Section
+                    if (widget.glucoseRecord.tags.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          const Icon(Icons.label_outline,
+                              color: Color(0xFF37B5B6), size: 20),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Tags',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TagsDisplayWidget(
+                          tags: widget.glucoseRecord.tags,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Divider(thickness: 1.2, color: Colors.grey[300]),
+                      const SizedBox(height: 18),
+                    ],
+                    Row(
+                      children: [
+                        const Icon(Icons.tips_and_updates,
+                            color: Color(0xFF37B5B6)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Recommendations',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    BulletList(sentences: recommendations),
+
+                    const SizedBox(height: 18),
+                    Divider(thickness: 1.2, color: Colors.grey[300]),
+                    const SizedBox(height: 18),
                     // Notes Section
                     if (widget.glucoseRecord.description.isNotEmpty) ...[
                       Row(
@@ -105,23 +156,6 @@ class _GlucoseLevelDetailState extends State<GlucoseLevelDetail> {
                       Divider(thickness: 1.2, color: Colors.grey[300]),
                       const SizedBox(height: 18),
                     ],
-                    Row(
-                      children: [
-                        const Icon(Icons.tips_and_updates,
-                            color: Color(0xFF37B5B6)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Recommendations',
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
-                    BulletList(sentences: recommendations),
                   ],
                 ),
               ),

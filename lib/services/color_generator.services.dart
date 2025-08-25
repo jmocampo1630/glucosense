@@ -195,6 +195,7 @@ Future<GlucoseRecord?> generateColor(File? image) async {
       description: formattedDate,
       date: now,
       color: glucoseLevel.color,
+      tags: [], // Initialize with empty tags
     );
   } else {
     return null;

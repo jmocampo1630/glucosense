@@ -6,6 +6,7 @@ class GlucoseRecord {
   final String description;
   final DateTime date;
   final Color color;
+  final List<String> tags;
   String id;
 
   GlucoseRecord({
@@ -15,6 +16,7 @@ class GlucoseRecord {
     required this.description,
     required this.date,
     required this.color,
+    this.tags = const [],
   });
 
   factory GlucoseRecord.fromJson(Map<dynamic, dynamic> json, String id) {
@@ -25,6 +27,7 @@ class GlucoseRecord {
       description: json['description'],
       date: DateTime.parse(json['date']).toLocal(),
       color: Color(json['color']),
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
     );
   }
 
@@ -36,6 +39,7 @@ class GlucoseRecord {
       'date': date.toIso8601String(), // Convert DateTime to ISO 8601 string
       'color': color.value,
       'id': id,
+      'tags': tags,
     };
   }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
+import 'package:glucolook/widgets/tags_input_widget.dart';
 
 class ScanGlucoseRecordModal extends StatefulWidget {
   const ScanGlucoseRecordModal(
@@ -15,11 +16,13 @@ class ScanGlucoseRecordModal extends StatefulWidget {
 
 class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
   final TextEditingController _notesController = TextEditingController();
+  List<String> _tags = [];
 
   @override
   void initState() {
     super.initState();
     _notesController.text = widget.glucoseRecord.description;
+    _tags = List.from(widget.glucoseRecord.tags);
   }
 
   @override
@@ -115,6 +118,24 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Tags (optional):',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TagsInputWidget(
+                initialTags: _tags,
+                onTagsChanged: (tags) {
+                  setState(() {
+                    _tags = tags;
+                  });
+                },
+                hintText: 'Add tags',
+              ),
             ],
           ),
         ),
@@ -150,7 +171,7 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
-                  // Update the glucose record with the notes
+                  // Update the glucose record with the notes and tags
                   final updatedRecord = GlucoseRecord(
                     id: widget.glucoseRecord.id,
                     name: widget.glucoseRecord.name,
@@ -158,6 +179,7 @@ class _ScanGlucoseRecordModalState extends State<ScanGlucoseRecordModal> {
                     description: _notesController.text.trim(),
                     date: widget.glucoseRecord.date,
                     color: widget.glucoseRecord.color,
+                    tags: _tags,
                   );
                   Navigator.pop(context, updatedRecord);
                 },
