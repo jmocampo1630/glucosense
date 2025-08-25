@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/enums/toast_type.dart';
+import 'package:glucolook/modals/pdf_export_modal.dart';
 import 'package:glucolook/modals/scan_glucose_record_modal.dart';
 import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
@@ -14,9 +15,11 @@ import 'package:glucolook/pages/line_chart.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
+import 'package:glucolook/services/pdf_export.services.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:glucolook/services/glucose_record.services.dart';
+import 'package:printing/printing.dart';
 
 class PatientRecordPage extends StatefulWidget {
   const PatientRecordPage({
@@ -108,6 +111,18 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                         fontWeight: FontWeight.bold,
                         color: Colors.blueGrey[700],
                       ),
+                ),
+                const Spacer(),
+                // Export to PDF Button
+                IconButton(
+                  onPressed: _openPdfExportModal,
+                  icon: const Icon(Icons.picture_as_pdf),
+                  color: const Color(0xFF37B5B6),
+                  tooltip: 'Export to PDF',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.shade100,
+                    padding: const EdgeInsets.all(8),
+                  ),
                 ),
               ],
             ),
@@ -356,6 +371,177 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         showToastWarning("Scan successful!", ToastType.success);
       }
     });
+  }
+
+  void _openPdfExportModal() {
+    showDialog(
+      context: context,
+      builder: (context) => PdfExportModal(
+        onExport: _exportToPdf,
+      ),
+    );
+  }
+
+  void _exportToPdf(DateTime startDate, DateTime endDate) async {
+    // Filter records based on date range
+    final filteredRecords = items.where((record) {
+      final recordDate =
+          DateTime(record.date.year, record.date.month, record.date.day);
+      final start = DateTime(startDate.year, startDate.month, startDate.day);
+      final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+      return (recordDate.isAtSameMomentAs(start) ||
+              recordDate.isAfter(start)) &&
+          (recordDate.isAtSameMomentAs(end) || recordDate.isBefore(end));
+    }).toList();
+
+    // Sort by date (oldest first for PDF)
+    filteredRecords.sort((a, b) => a.date.compareTo(b.date));
+
+    if (filteredRecords.isEmpty) {
+      showToastWarning(
+          "No records found in the selected date range.", ToastType.error);
+      return;
+    }
+
+    try {
+      // Show loading
+      showToastWarning("Generating PDF...", ToastType.success);
+
+      // Generate PDF
+      final pdfFile = await PdfExportService.generateGlucoseRecordsPdf(
+        records: filteredRecords,
+        startDate: startDate,
+        endDate: endDate,
+        patient: widget.patient,
+      );
+
+      // Share the PDF
+      await Printing.sharePdf(
+        bytes: await pdfFile.readAsBytes(),
+        filename: pdfFile.path.split('/').last,
+      );
+
+      final fileName = pdfFile.path.split('/').last;
+
+      // Show success dialog with file location details
+      _showPdfSavedDialog(fileName, filteredRecords.length, pdfFile.path);
+    } catch (e) {
+      showToastWarning(
+        "Failed to export PDF: ${e.toString()}",
+        ToastType.error,
+      );
+    }
+  }
+
+  void _showPdfSavedDialog(String fileName, int recordCount, String fullPath) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 20),
+              SizedBox(width: 8),
+              Text('Exported Successfully'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Your glucose records have been exported to PDF.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.description,
+                            color: Color(0xFF37B5B6), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'File Details',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Records: $recordCount glucose readings',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Filename: $fileName',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Location: Documents folder',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[600], size: 16),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'You can find this file in your device\'s Documents folder or Files app.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: Color(0xFF37B5B6),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

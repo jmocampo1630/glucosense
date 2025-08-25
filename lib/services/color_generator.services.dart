@@ -215,10 +215,10 @@ Future<Color> mixImageColors(File imageFile) async {
   // Iterate through each pixel and sum up RGB values
   for (int y = 0; y < image.height; y++) {
     for (int x = 0; x < image.width; x++) {
-      int pixel = image.getPixel(x, y);
-      sumR += img.getRed(pixel);
-      sumG += img.getGreen(pixel);
-      sumB += img.getBlue(pixel);
+      final pixel = image.getPixel(x, y);
+      sumR += pixel.r.toInt();
+      sumG += pixel.g.toInt();
+      sumB += pixel.b.toInt();
     }
   }
 

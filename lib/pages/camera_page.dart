@@ -125,7 +125,8 @@ Future<void> _takePictureAndNavigateBack(
     int y = (image.height - imgSize) ~/ 2;
 
     // Crop the image
-    img.Image croppedImage = img.copyCrop(image, x, y, imgSize, imgSize);
+    img.Image croppedImage =
+        img.copyCrop(image, x: x, y: y, width: imgSize, height: imgSize);
 
     // Save the cropped image to a temporary file
     Directory tempDir = await getTemporaryDirectory();
