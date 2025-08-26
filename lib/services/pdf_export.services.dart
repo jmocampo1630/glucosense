@@ -19,6 +19,7 @@ class PdfExportService {
     // Calculate statistics
     final stats = _calculateStatistics(records);
 
+    // First page with summary
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -62,9 +63,8 @@ class PdfExportService {
           _buildStatisticsSection(stats),
           pw.SizedBox(height: 24),
 
-          // Records Table
+          // Records Table Summary
           _buildRecordsTable(records),
-
           pw.SizedBox(height: 24),
 
           // Level Distribution Chart (text-based)
@@ -72,6 +72,9 @@ class PdfExportService {
         ],
       ),
     );
+
+    // Add table pages separately for proper pagination
+    _addTablePages(pdf, records, patient);
 
     // Generate PDF bytes and filename
     final fileName =
@@ -366,77 +369,120 @@ class PdfExportService {
     );
   }
 
-  static pw.Widget _buildRecordsTable(List<GlucoseRecord> records) {
+  // Add table pages separately for proper pagination
+  static void _addTablePages(
+      pw.Document pdf, List<GlucoseRecord> records, Patient? patient) {
+    if (records.isEmpty) return;
+
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          'Detailed Records',
-          style: pw.TextStyle(
-            fontSize: 18,
-            fontWeight: pw.FontWeight.bold,
-            color: PdfColors.teal700,
-          ),
-        ),
-        pw.SizedBox(height: 12),
-        pw.Table(
-          border: pw.TableBorder.all(color: PdfColors.grey400),
-          columnWidths: {
-            0: const pw.FlexColumnWidth(2.5),
-            1: const pw.FlexColumnWidth(2),
-            2: const pw.FlexColumnWidth(1.5),
-            3: const pw.FlexColumnWidth(1.2),
-          },
-          children: [
-            // Header
-            pw.TableRow(
-              decoration: const pw.BoxDecoration(color: PdfColors.teal700),
-              children: [
-                _buildTableCell('Date & Time', isHeader: true),
-                _buildTableCell('Level', isHeader: true),
-                _buildTableCell('Value (mg/dL)', isHeader: true),
-                _buildTableCell('Status', isHeader: true),
-              ],
-            ),
-            // Data rows
-            ...records.map((record) {
-              String status = 'Normal';
-              if (record.value < 70) {
-                status = 'Low';
-              } else if (record.value > 140) {
-                status = 'High';
-              }
+    // Convert records to table data
+    final List<List<String>> tableData = records.map((record) {
+      String status = 'Normal';
+      if (record.value < 70) {
+        status = 'Low';
+      } else if (record.value > 140) {
+        status = 'High';
+      }
 
-              return pw.TableRow(
-                children: [
-                  _buildTableCell(
-                      '${dateFormat.format(record.date)}\n${timeFormat.format(record.date)}'),
-                  _buildTableCell(record.name),
-                  _buildTableCell(record.value.toStringAsFixed(1)),
-                  _buildTableCell(status),
-                ],
-              );
-            }),
+      return [
+        '${dateFormat.format(record.date)}\n${timeFormat.format(record.date)}',
+        record.name,
+        record.value.toStringAsFixed(1),
+        status,
+      ];
+    }).toList();
+
+    // Add the table as a separate multipage
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        header: (context) => pw.Column(
+          children: [
+            _buildHeader(patient),
+            pw.SizedBox(height: 16),
+            pw.Text(
+              'Detailed Records',
+              style: pw.TextStyle(
+                fontSize: 18,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.teal700,
+              ),
+            ),
+            pw.SizedBox(height: 8),
           ],
         ),
-      ],
+        footer: (context) => _buildFooter(context),
+        build: (context) => [
+          pw.TableHelper.fromTextArray(
+            border: pw.TableBorder.all(color: PdfColors.grey400),
+            headerStyle: pw.TextStyle(
+              fontSize: 12,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.white,
+            ),
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.teal700),
+            cellStyle: const pw.TextStyle(fontSize: 10),
+            cellPadding: const pw.EdgeInsets.all(8),
+            cellAlignment: pw.Alignment.centerLeft,
+            headerAlignment: pw.Alignment.center,
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2.5),
+              1: const pw.FlexColumnWidth(2),
+              2: const pw.FlexColumnWidth(1.5),
+              3: const pw.FlexColumnWidth(1.2),
+            },
+            headers: ['Date & Time', 'Level', 'Value (mg/dL)', 'Status'],
+            data: tableData,
+          ),
+        ],
+      ),
     );
   }
 
-  static pw.Widget _buildTableCell(String text, {bool isHeader = false}) {
+  static pw.Widget _buildRecordsTable(List<GlucoseRecord> records) {
+    // This is now just a summary or indicator that detailed records are on following pages
     return pw.Container(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(
-          fontSize: isHeader ? 12 : 10,
-          fontWeight: isHeader ? pw.FontWeight.bold : pw.FontWeight.normal,
-          color: isHeader ? PdfColors.white : PdfColors.black,
-        ),
-        textAlign: isHeader ? pw.TextAlign.center : pw.TextAlign.left,
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.blue50,
+        borderRadius: pw.BorderRadius.circular(8),
+        border: pw.Border.all(color: PdfColors.blue200),
+      ),
+      child: pw.Row(
+        children: [
+          pw.Icon(
+            pw.IconData(0xe06d), // info icon
+            color: PdfColors.blue700,
+            size: 24,
+          ),
+          pw.SizedBox(width: 12),
+          pw.Expanded(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Detailed Records',
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.blue700,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  'Complete table of ${records.length} glucose records is available on the following pages.',
+                  style: const pw.TextStyle(
+                    fontSize: 12,
+                    color: PdfColors.blue600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
