@@ -4,6 +4,7 @@ import 'package:glucolook/models/settings.model.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/preferences.services.dart';
+import 'package:glucolook/widgets/reminder_settings_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -20,116 +21,125 @@ class _SettingsPageState extends State<SettingsPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Settings'),
       ),
-      body: Center(
-        child: Card(
-          elevation: 5,
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 22),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text(
-                    "App Settings",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF37B5B6),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _thresholdController,
-                    decoration: InputDecoration(
-                      labelText: 'Threshold',
-                      prefixIcon: const Icon(Icons.speed),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter your threshold.';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _threshold = int.parse(value);
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  DropdownButtonFormField(
-                    value: _type,
-                    decoration: InputDecoration(
-                      labelText: 'Type',
-                      prefixIcon: const Icon(Icons.category),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    isExpanded: true,
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _type = value;
-                        });
-                      }
-                    },
-                    onSaved: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _type = value;
-                        });
-                      }
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return "Please select a type.";
-                      } else {
-                        return null;
-                      }
-                    },
-                    items: listOfValue.map((ColorFinderType item) {
-                      return DropdownMenuItem<int>(
-                        value: item.value,
-                        child: Text(item.name),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 28.0),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      // Removed the icon
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF37B5B6),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Reminder Settings Section
+            const ReminderSettingsWidget(),
+            const SizedBox(height: 20),
+
+            // App Settings Section
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 28, horizontal: 22),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const Text(
+                        "App Settings",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF37B5B6),
                         ),
                       ),
-                      onPressed: _submitForm,
-                      // Removed the icon
-                      child: const Text(
-                        'Save Settings',
-                        style: TextStyle(fontSize: 16),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _thresholdController,
+                        decoration: InputDecoration(
+                          labelText: 'Threshold',
+                          prefixIcon: const Icon(Icons.speed),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your threshold.';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _threshold = int.parse(value);
+                            });
+                          }
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 18),
+                      DropdownButtonFormField(
+                        value: _type,
+                        decoration: InputDecoration(
+                          labelText: 'Type',
+                          prefixIcon: const Icon(Icons.category),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        isExpanded: true,
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _type = value;
+                            });
+                          }
+                        },
+                        onSaved: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _type = value;
+                            });
+                          }
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return "Please select a type.";
+                          } else {
+                            return null;
+                          }
+                        },
+                        items: listOfValue.map((ColorFinderType item) {
+                          return DropdownMenuItem<int>(
+                            value: item.value,
+                            child: Text(item.name),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 28.0),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF37B5B6),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _submitForm,
+                          child: const Text(
+                            'Save Settings',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

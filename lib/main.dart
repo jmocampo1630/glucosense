@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolook/pages/my_home_page.dart';
+import 'package:glucolook/services/notification.services.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +13,14 @@ Future<void> main() async {
   final firstCamera = cameras.first;
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Initialize notification service with error handling
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    // Continue without notifications if initialization fails
+    print('Notification initialization failed: $e');
+  }
 
   runApp(MyApp(camera: firstCamera));
 }
