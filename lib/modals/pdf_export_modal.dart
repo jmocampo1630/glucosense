@@ -21,11 +21,10 @@ class _PdfExportModalState extends State<PdfExportModal> {
   @override
   void initState() {
     super.initState();
-    // Set default to current month's first and last day
+    // Set default to current month's first day and current date
     final now = DateTime.now();
     _startDate = DateTime(now.year, now.month, 1);
-    _endDate =
-        DateTime(now.year, now.month + 1, 0); // Last day of current month
+    _endDate = now; // Use current date instead of last day of month
   }
 
   Future<void> _selectStartDate() async {
@@ -89,7 +88,7 @@ class _PdfExportModalState extends State<PdfExportModal> {
       title: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.picture_as_pdf, color: Color(0xFF37B5B6)),
+          Icon(Icons.file_upload, color: Color(0xFF37B5B6)),
           SizedBox(width: 8),
           Text('Export to PDF'),
         ],

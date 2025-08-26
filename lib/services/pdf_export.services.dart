@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:glucolook/models/glucose_record.model.dart';
@@ -8,7 +6,7 @@ import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 
 class PdfExportService {
-  static Future<File> generateGlucoseRecordsPdf({
+  static Future<Map<String, dynamic>> generateGlucoseRecordsPdf({
     required List<GlucoseRecord> records,
     required DateTime startDate,
     required DateTime endDate,
@@ -75,14 +73,15 @@ class PdfExportService {
       ),
     );
 
-    // Save PDF to device
-    final directory = await getApplicationDocumentsDirectory();
+    // Generate PDF bytes and filename
     final fileName =
         'glucose_records_${dateFormat.format(startDate).replaceAll(' ', '_')}_to_${dateFormat.format(endDate).replaceAll(' ', '_')}.pdf';
-    final file = File('${directory.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
+    final pdfBytes = await pdf.save();
 
-    return file;
+    return {
+      'bytes': pdfBytes,
+      'filename': fileName,
+    };
   }
 
   static Map<String, dynamic> _calculateStatistics(

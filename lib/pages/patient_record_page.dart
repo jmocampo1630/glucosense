@@ -116,7 +116,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                 // Export to PDF Button
                 IconButton(
                   onPressed: _openPdfExportModal,
-                  icon: const Icon(Icons.picture_as_pdf),
+                  icon: const Icon(Icons.file_upload),
                   color: const Color(0xFF37B5B6),
                   tooltip: 'Export to PDF',
                   style: IconButton.styleFrom(
@@ -409,7 +409,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       showToastWarning("Generating PDF...", ToastType.success);
 
       // Generate PDF
-      final pdfFile = await PdfExportService.generateGlucoseRecordsPdf(
+      final pdfResult = await PdfExportService.generateGlucoseRecordsPdf(
         records: filteredRecords,
         startDate: startDate,
         endDate: endDate,
@@ -418,130 +418,23 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
 
       // Share the PDF
       await Printing.sharePdf(
-        bytes: await pdfFile.readAsBytes(),
-        filename: pdfFile.path.split('/').last,
+        bytes: pdfResult['bytes'],
+        filename: pdfResult['filename'],
       );
 
-      final fileName = pdfFile.path.split('/').last;
+      final fileName = pdfResult['filename'];
 
-      // Show success dialog with file location details
-      _showPdfSavedDialog(fileName, filteredRecords.length, pdfFile.path);
+      // Show success message
+      showToastWarning(
+        "PDF generated and ready to share: $fileName",
+        ToastType.success,
+      );
     } catch (e) {
       showToastWarning(
         "Failed to export PDF: ${e.toString()}",
         ToastType.error,
       );
     }
-  }
-
-  void _showPdfSavedDialog(String fileName, int recordCount, String fullPath) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 20),
-              SizedBox(width: 8),
-              Text('Exported Successfully'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Your glucose records have been exported to PDF.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.description,
-                            color: Color(0xFF37B5B6), size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'File Details',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Records: $recordCount glucose readings',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Filename: $fileName',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Location: Documents folder',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.blue[600], size: 16),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'You can find this file in your device\'s Documents folder or Files app.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'OK',
-                style: TextStyle(
-                  color: Color(0xFF37B5B6),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
