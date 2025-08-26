@@ -386,11 +386,10 @@ class PdfExportService {
         pw.Table(
           border: pw.TableBorder.all(color: PdfColors.grey400),
           columnWidths: {
-            0: const pw.FlexColumnWidth(2),
-            1: const pw.FlexColumnWidth(1.5),
+            0: const pw.FlexColumnWidth(2.5),
+            1: const pw.FlexColumnWidth(2),
             2: const pw.FlexColumnWidth(1.5),
-            3: const pw.FlexColumnWidth(1),
-            4: const pw.FlexColumnWidth(2),
+            3: const pw.FlexColumnWidth(1.2),
           },
           children: [
             // Header
@@ -401,7 +400,6 @@ class PdfExportService {
                 _buildTableCell('Level', isHeader: true),
                 _buildTableCell('Value (mg/dL)', isHeader: true),
                 _buildTableCell('Status', isHeader: true),
-                _buildTableCell('Tags', isHeader: true),
               ],
             ),
             // Data rows
@@ -420,7 +418,6 @@ class PdfExportService {
                   _buildTableCell(record.name),
                   _buildTableCell(record.value.toStringAsFixed(1)),
                   _buildTableCell(status),
-                  _buildTableCell(record.tags.join(', ')),
                 ],
               );
             }),
