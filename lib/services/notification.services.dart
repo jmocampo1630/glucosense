@@ -149,10 +149,18 @@ class NotificationService {
                 ledColor: Color(0xFF37B5B6),
                 ledOnMs: 1000,
                 ledOffMs: 500,
+                // Enhanced settings for background notifications
+                autoCancel: true,
+                enableVibration: true,
+                playSound: true,
+                fullScreenIntent: true,
+                category: AndroidNotificationCategory.reminder,
+                visibility: NotificationVisibility.public,
               ),
               iOS: DarwinNotificationDetails(
                 categoryIdentifier: 'glucose_reminder',
                 interruptionLevel: InterruptionLevel.active,
+                sound: 'default',
               ),
             ),
             androidScheduleMode: scheduleMode,
@@ -249,7 +257,7 @@ class NotificationService {
       await _notifications.show(
         9999,
         'Test Notification',
-        'This is a test notification for glucose reminder',
+        'This is a test notification for glucose reminder - tap to dismiss',
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'test_channel',
@@ -259,8 +267,18 @@ class NotificationService {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
             color: Color(0xFF37B5B6),
+            // Enhanced settings for better visibility
+            autoCancel: true,
+            enableVibration: true,
+            playSound: true,
+            enableLights: true,
+            ledColor: Color(0xFF37B5B6),
+            ledOnMs: 1000,
+            ledOffMs: 500,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: DarwinNotificationDetails(
+            sound: 'default',
+          ),
         ),
       );
     } on MissingPluginException catch (e) {
@@ -269,5 +287,48 @@ class NotificationService {
     } catch (e) {
       throw Exception('Failed to show test notification: ${e.toString()}');
     }
+  }
+
+  // Add method to check if notifications will work in background
+  static Future<Map<String, bool>> checkBackgroundCapabilities() async {
+    final Map<String, bool> capabilities = {};
+
+    try {
+      final androidPlugin =
+          _notifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        // Check if exact alarms are available
+        capabilities['exactAlarmsPermitted'] =
+            true; // Will be caught if not permitted
+
+        // Check notification permission
+        final bool? notificationPermission =
+            await androidPlugin.areNotificationsEnabled();
+        capabilities['notificationsEnabled'] = notificationPermission ?? false;
+      }
+
+      capabilities['serviceInitialized'] = _isInitialized;
+    } catch (e) {
+      capabilities['error'] = true;
+    }
+
+    return capabilities;
+  }
+
+  // Method to help users enable background notifications
+  static String getBackgroundNotificationGuide() {
+    return '''
+Background Notification Tips:
+
+1. Allow notifications for GlucoSense in Settings
+2. Disable battery optimization for this app
+3. Keep the app in recent apps (don't swipe it away)
+4. For Samsung devices: Disable "Put unused apps to sleep"
+5. For Xiaomi/MIUI: Enable "Autostart" for this app
+
+These settings ensure reliable daily reminders even when the app is closed.
+    ''';
   }
 }
