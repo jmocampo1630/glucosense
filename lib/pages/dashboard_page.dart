@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import '../models/patient.model.dart';
 import '../widgets/summary_card.dart';
+import '../widgets/dashboard_reminders_widget.dart';
+import '../services/reminder_migration.service.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   final Patient? patient;
   final Future<void> Function()? onRecordsChanged;
 
@@ -13,13 +15,44 @@ class DashboardPage extends StatelessWidget {
     this.onRecordsChanged,
   });
 
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
   static const double cardSpacing = 8;
   static const double cardPadding = 14;
 
   @override
+  void initState() {
+    super.initState();
+    _checkForMigration();
+  }
+
+  Future<void> _checkForMigration() async {
+    // Only check for migration if user is authenticated and has a patient
+    if (widget.patient != null) {
+      try {
+        final isCompleted =
+            await ReminderMigrationService.isMigrationCompleted();
+        if (!isCompleted && mounted) {
+          final shouldMigrate =
+              await ReminderMigrationService.showMigrationDialog(context);
+          if (shouldMigrate && mounted) {
+            await ReminderMigrationService.performMigrationWithProgress(
+                context);
+          }
+        }
+      } catch (e) {
+        print('Error during migration check: $e');
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: onRecordsChanged ?? () async {},
+      onRefresh: widget.onRecordsChanged ?? () async {},
       child: ListView(
         padding: const EdgeInsets.all(cardPadding),
         children: [
@@ -62,7 +95,8 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (patient?.name ?? 'Patient Name').toUpperCase(),
+                          (widget.patient?.name ?? 'Patient Name')
+                              .toUpperCase(),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -76,7 +110,7 @@ class DashboardPage extends StatelessWidget {
                                 size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Age: ${patient?.dateOfBirth != null ? calculateAge(patient!.dateOfBirth).toString() : '--'}',
+                              'Age: ${widget.patient?.dateOfBirth != null ? calculateAge(widget.patient!.dateOfBirth).toString() : '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -84,7 +118,7 @@ class DashboardPage extends StatelessWidget {
                             const Icon(Icons.wc, size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Sex: ${patient?.gender ?? '--'}',
+                              'Sex: ${widget.patient?.gender ?? '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -97,7 +131,7 @@ class DashboardPage extends StatelessWidget {
                                 size: 16, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              'Last Record: ${(patient?.glucoseRecords.isNotEmpty ?? false) ? getLatestRecord(patient!.glucoseRecords)!.date.toString().split(' ').first : '--'}',
+                              'Last Record: ${(widget.patient?.glucoseRecords.isNotEmpty ?? false) ? getLatestRecord(widget.patient!.glucoseRecords)!.date.toString().split(' ').first : '--'}',
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.grey),
                             ),
@@ -115,8 +149,10 @@ class DashboardPage extends StatelessWidget {
             children: [
               SummaryCard(
                 title: 'Latest',
-                value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? getLatestRecord(patient!.glucoseRecords)!.value.toString()
+                value: (widget.patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? getLatestRecord(widget.patient!.glucoseRecords)!
+                        .value
+                        .toString()
                     : '--',
                 unit: 'mg/dL',
                 color: Colors.blue.shade50,
@@ -126,8 +162,8 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Avg (7d)',
-                value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? (calculate7DayAverage(patient!.glucoseRecords)
+                value: (widget.patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? (calculate7DayAverage(widget.patient!.glucoseRecords)
                             ?.toStringAsFixed(1) ??
                         '--')
                     : '--',
@@ -139,7 +175,7 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Records',
-                value: (patient?.glucoseRecords.length ?? 0).toString(),
+                value: (widget.patient?.glucoseRecords.length ?? 0).toString(),
                 unit: '',
                 color: Colors.grey.shade100,
                 icon: Icons.list_alt,
@@ -152,8 +188,8 @@ class DashboardPage extends StatelessWidget {
             children: [
               SummaryCard(
                 title: 'High',
-                value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? patient!.glucoseRecords
+                value: (widget.patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? widget.patient!.glucoseRecords
                         .map((e) => e.value)
                         .fold<double>(
                             double.negativeInfinity, (a, b) => a > b ? a : b)
@@ -167,8 +203,8 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(width: cardSpacing),
               SummaryCard(
                 title: 'Low',
-                value: (patient?.glucoseRecords.isNotEmpty ?? false)
-                    ? patient!.glucoseRecords
+                value: (widget.patient?.glucoseRecords.isNotEmpty ?? false)
+                    ? widget.patient!.glucoseRecords
                         .map((e) => e.value)
                         .fold<double>(double.infinity, (a, b) => a < b ? a : b)
                         .toStringAsFixed(1)
@@ -180,6 +216,13 @@ class DashboardPage extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: cardSpacing),
+          // Patient Reminders Widget
+          if (widget.patient != null)
+            DashboardRemindersWidget(
+              patientId: widget.patient!.id,
+              patientName: widget.patient!.name,
+            ),
         ],
       ),
     );

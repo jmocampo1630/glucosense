@@ -25,14 +25,67 @@ Future<void> main() async {
   runApp(MyApp(camera: firstCamera));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key, required this.camera});
   final CameraDescription camera;
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkForNotificationTap();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkForNotificationTap();
+    }
+  }
+
+  void _checkForNotificationTap() async {
+    final patientId = NotificationService.getAndClearLastTappedPatientId();
+    if (patientId != null) {
+      // Navigate to the specific patient
+      _navigateToPatient(patientId);
+    }
+  }
+
+  void _navigateToPatient(String patientId) {
+    // This will be handled by the home page to navigate to the specific patient
+    // We'll pass the patientId to the home page
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      // You can implement navigation logic here based on your app structure
+      // For now, we'll just show a snackbar as an example
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Navigating to patient: $patientId'),
+          backgroundColor: const Color(0xFF37B5B6),
+        ),
+      );
+    }
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'GlucoLook',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF37B5B6)),
@@ -52,7 +105,7 @@ class MyApp extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasData) {
-            return MyHomePage(title: 'GlucoLook', camera: camera);
+            return MyHomePage(title: 'GlucoLook', camera: widget.camera);
           }
           return const LoginPage();
         },

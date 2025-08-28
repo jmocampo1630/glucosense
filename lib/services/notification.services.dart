@@ -4,6 +4,57 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:glucolook/models/patient_reminder.model.dart';
+
+// Class to represent a patient-specific reminder
+class PatientReminder {
+  final String id;
+  final String patientId;
+  final String patientName;
+  final TimeOfDay time;
+  final String title;
+  final String message;
+  final bool enabled;
+  final List<int> daysOfWeek; // 1=Monday, 7=Sunday
+
+  PatientReminder({
+    required this.id,
+    required this.patientId,
+    required this.patientName,
+    required this.time,
+    required this.title,
+    required this.message,
+    required this.enabled,
+    required this.daysOfWeek,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'patientId': patientId,
+      'patientName': patientName,
+      'hour': time.hour,
+      'minute': time.minute,
+      'title': title,
+      'message': message,
+      'enabled': enabled,
+      'daysOfWeek': daysOfWeek,
+    };
+  }
+
+  factory PatientReminder.fromJson(Map<String, dynamic> json) {
+    return PatientReminder(
+      id: json['id'],
+      patientId: json['patientId'],
+      patientName: json['patientName'],
+      time: TimeOfDay(hour: json['hour'], minute: json['minute']),
+      title: json['title'],
+      message: json['message'],
+      enabled: json['enabled'],
+      daysOfWeek: List<int>.from(json['daysOfWeek']),
+    );
+  }
+}
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
@@ -13,6 +64,10 @@ class NotificationService {
   static const String _reminderEnabledKey = 'glucose_reminder_enabled';
   static const String _reminderTimeKey = 'glucose_reminder_time';
   static const int _reminderNotificationId = 1001;
+
+  // Patient-specific reminder keys and constants
+  static const String _patientRemindersPrefix = 'patient_reminders_';
+  static const int _patientNotificationIdBase = 2000;
 
   static Future<void> initialize() async {
     try {
@@ -76,8 +131,28 @@ class NotificationService {
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
-    // Handle notification tap - could navigate to camera page
-    // TODO: Add navigation logic if needed
+    // Handle notification tap - navigate to specific patient if it's a patient reminder
+    final payload = response.payload;
+    if (payload != null && payload.startsWith('patient_')) {
+      final patientId = payload.substring(8); // Remove 'patient_' prefix
+      // Store the patient ID for navigation
+      _handlePatientNotificationTap(patientId);
+    }
+    // TODO: Add navigation logic for general reminders if needed
+  }
+
+  static void _handlePatientNotificationTap(String patientId) {
+    // This will be called by the main app to handle navigation
+    _lastTappedPatientId = patientId;
+  }
+
+  static String? _lastTappedPatientId;
+
+  // Method to get and clear the last tapped patient ID
+  static String? getAndClearLastTappedPatientId() {
+    final patientId = _lastTappedPatientId;
+    _lastTappedPatientId = null;
+    return patientId;
   }
 
   static Future<void> scheduleGlucoseReminder({
@@ -330,5 +405,328 @@ Background Notification Tips:
 
 These settings ensure reliable daily reminders even when the app is closed.
     ''';
+  }
+
+  // ===== PATIENT-SPECIFIC REMINDER METHODS =====
+
+  // Add a patient-specific reminder
+  static Future<String> addPatientReminder({
+    required String patientId,
+    required String patientName,
+    required TimeOfDay time,
+    String? title,
+    String? message,
+    List<int>? daysOfWeek,
+  }) async {
+    final reminderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final reminder = PatientReminder(
+      id: reminderId,
+      patientId: patientId,
+      patientName: patientName,
+      time: time,
+      title: title ?? 'Glucose Check Reminder',
+      message: message ?? 'Time to check glucose level for $patientName',
+      enabled: true,
+      daysOfWeek: daysOfWeek ?? [1, 2, 3, 4, 5, 6, 7], // Default: every day
+    );
+
+    await _savePatientReminder(reminder);
+    await _schedulePatientReminder(reminder);
+
+    return reminderId;
+  }
+
+  // Get all reminders for a specific patient
+  static Future<List<PatientReminder>> getPatientReminders(
+      String patientId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final reminderKeys = prefs
+        .getKeys()
+        .where((key) => key.startsWith('$_patientRemindersPrefix$patientId'))
+        .toList();
+
+    List<PatientReminder> reminders = [];
+    for (String key in reminderKeys) {
+      final dataString = prefs.getString(key);
+      if (dataString != null) {
+        try {
+          // Parse the URL-encoded data
+          final data = <String, String>{};
+          for (final pair in dataString.split('&')) {
+            final parts = pair.split('=');
+            if (parts.length == 2) {
+              data[parts[0]] = Uri.decodeComponent(parts[1]);
+            }
+          }
+
+          final reminder = PatientReminder(
+            id: data['id'] ?? '',
+            patientId: data['patientId'] ?? patientId,
+            patientName: data['patientName'] ?? '',
+            time: TimeOfDay(
+              hour: int.tryParse(data['hour'] ?? '9') ?? 9,
+              minute: int.tryParse(data['minute'] ?? '0') ?? 0,
+            ),
+            title: data['title'] ?? 'Glucose Check',
+            message: data['message'] ?? 'Time to check glucose',
+            enabled: data['enabled'] == 'true',
+            daysOfWeek: data['daysOfWeek']
+                    ?.split(',')
+                    .map((e) => int.tryParse(e) ?? 1)
+                    .toList() ??
+                [1, 2, 3, 4, 5, 6, 7],
+          );
+          reminders.add(reminder);
+        } catch (e) {
+          // Skip invalid reminders
+          continue;
+        }
+      }
+    }
+
+    return reminders;
+  }
+
+  // Update a patient reminder
+  static Future<void> updatePatientReminder(PatientReminder reminder) async {
+    await _savePatientReminder(reminder);
+
+    // Cancel existing notification and reschedule if enabled
+    await cancelPatientReminder(reminder.patientId, reminder.id);
+    if (reminder.enabled) {
+      await _schedulePatientReminder(reminder);
+    }
+  }
+
+  // Delete a patient reminder
+  static Future<void> deletePatientReminder(
+      String patientId, String reminderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_patientRemindersPrefix${patientId}_$reminderId');
+    await cancelPatientReminder(patientId, reminderId);
+  }
+
+  // Cancel a specific patient reminder
+  static Future<void> cancelPatientReminder(
+      String patientId, String reminderId) async {
+    final notificationId = _getPatientNotificationId(patientId, reminderId);
+    await _notifications.cancel(notificationId);
+  }
+
+  // Cancel all reminders for a patient
+  static Future<void> cancelAllPatientReminders(String patientId) async {
+    final reminders = await getPatientReminders(patientId);
+    for (final reminder in reminders) {
+      await cancelPatientReminder(patientId, reminder.id);
+    }
+  }
+
+  // Private helper methods
+  static Future<void> _savePatientReminder(PatientReminder reminder) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_patientRemindersPrefix${reminder.patientId}_${reminder.id}';
+
+    // Simple string format for easier parsing
+    final data =
+        'id=${reminder.id}&patientId=${reminder.patientId}&patientName=${Uri.encodeComponent(reminder.patientName)}&hour=${reminder.time.hour}&minute=${reminder.time.minute}&title=${Uri.encodeComponent(reminder.title)}&message=${Uri.encodeComponent(reminder.message)}&enabled=${reminder.enabled}&daysOfWeek=${reminder.daysOfWeek.join(',')}';
+
+    await prefs.setString(key, data);
+  }
+
+  static Future<void> _schedulePatientReminder(PatientReminder reminder) async {
+    if (!reminder.enabled) return;
+
+    try {
+      // Ensure notification service is initialized
+      if (!_isInitialized) {
+        await initialize();
+      }
+
+      final notificationId =
+          _getPatientNotificationId(reminder.patientId, reminder.id);
+
+      AndroidScheduleMode scheduleMode =
+          AndroidScheduleMode.exactAllowWhileIdle;
+
+      try {
+        await _notifications.zonedSchedule(
+          notificationId,
+          reminder.title,
+          reminder.message,
+          _nextInstanceOfTime(reminder.time.hour, reminder.time.minute),
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'patient_reminders',
+              'Patient Reminders',
+              channelDescription: 'Reminders for specific patients',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+              color: const Color(0xFF37B5B6),
+              enableLights: true,
+              ledColor: const Color(0xFF37B5B6),
+              ledOnMs: 1000,
+              ledOffMs: 500,
+              autoCancel: true,
+              enableVibration: true,
+              playSound: true,
+              fullScreenIntent: true,
+              category: AndroidNotificationCategory.reminder,
+              visibility: NotificationVisibility.public,
+            ),
+            iOS: const DarwinNotificationDetails(
+              categoryIdentifier: 'patient_reminder',
+              interruptionLevel: InterruptionLevel.active,
+              sound: 'default',
+            ),
+          ),
+          androidScheduleMode: scheduleMode,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.time,
+          payload:
+              'patient_${reminder.patientId}', // This will help with navigation
+        );
+      } on PlatformException catch (e) {
+        if (e.code == 'exact_alarms_not_permitted') {
+          // Fallback to inexact alarms
+          scheduleMode = AndroidScheduleMode.inexactAllowWhileIdle;
+          await _notifications.zonedSchedule(
+            notificationId,
+            reminder.title,
+            reminder.message,
+            _nextInstanceOfTime(reminder.time.hour, reminder.time.minute),
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                'patient_reminders',
+                'Patient Reminders',
+                channelDescription: 'Reminders for specific patients',
+                importance: Importance.high,
+                priority: Priority.high,
+                icon: '@mipmap/ic_launcher',
+                color: const Color(0xFF37B5B6),
+                enableLights: true,
+                ledColor: const Color(0xFF37B5B6),
+                ledOnMs: 1000,
+                ledOffMs: 500,
+                autoCancel: true,
+                enableVibration: true,
+                playSound: true,
+                fullScreenIntent: true,
+                category: AndroidNotificationCategory.reminder,
+                visibility: NotificationVisibility.public,
+              ),
+              iOS: const DarwinNotificationDetails(
+                categoryIdentifier: 'patient_reminder',
+                interruptionLevel: InterruptionLevel.active,
+                sound: 'default',
+              ),
+            ),
+            androidScheduleMode: scheduleMode,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            matchDateTimeComponents: DateTimeComponents.time,
+            payload: 'patient_${reminder.patientId}',
+          );
+        } else {
+          rethrow;
+        }
+      }
+    } on MissingPluginException catch (e) {
+      throw Exception(
+          'Notification feature is not available. Please restart the app. Error: ${e.message}');
+    } catch (e) {
+      throw Exception('Failed to schedule patient reminder: ${e.toString()}');
+    }
+  }
+
+  static int _getPatientNotificationId(String patientId, String reminderId) {
+    // Create a unique notification ID by combining base with hash
+    final combined = '$patientId$reminderId';
+    return _patientNotificationIdBase + combined.hashCode.abs() % 10000;
+  }
+
+  // ==== NEW METHODS FOR FIRESTORE PATIENT REMINDERS ====
+
+  /// Schedule a one-time notification for a PatientReminderModel
+  static Future<void> scheduleOneTimePatientReminder(
+      PatientReminderModel reminder) async {
+    try {
+      final scheduledDate = tz.TZDateTime.from(reminder.dateTime, tz.local);
+
+      // Check if the reminder time is in the future
+      if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
+        print('Reminder time is in the past, not scheduling notification');
+        return;
+      }
+
+      await _notifications.zonedSchedule(
+        reminder.notificationId,
+        'Reminder: ${reminder.patientName}',
+        reminder.title,
+        scheduledDate,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'patient_reminders',
+            'Patient Reminders',
+            channelDescription: 'Notifications for patient reminders',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_launcher',
+            color: const Color(0xFF009688),
+            enableVibration: true,
+            playSound: true,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            sound: 'default.caf',
+          ),
+        ),
+        payload: 'patient_reminder:${reminder.patientId}',
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+
+      print(
+          'Scheduled one-time reminder: ${reminder.title} for ${reminder.patientName} at ${reminder.dateTime}');
+    } catch (e) {
+      print('Error scheduling one-time patient reminder: $e');
+      throw e;
+    }
+  }
+
+  /// Cancel a specific notification by ID
+  static Future<void> cancelNotification(int notificationId) async {
+    try {
+      await _notifications.cancel(notificationId);
+      print('Cancelled notification with ID: $notificationId');
+    } catch (e) {
+      print('Error cancelling notification: $e');
+    }
+  }
+
+  /// Cancel all notifications
+  static Future<void> cancelAllNotifications() async {
+    try {
+      await _notifications.cancelAll();
+      print('Cancelled all notifications');
+    } catch (e) {
+      print('Error cancelling all notifications: $e');
+    }
+  }
+
+  /// Get pending notifications (for debugging)
+  static Future<List<PendingNotificationRequest>>
+      getPendingNotifications() async {
+    try {
+      return await _notifications.pendingNotificationRequests();
+    } catch (e) {
+      print('Error getting pending notifications: $e');
+      return [];
+    }
   }
 }
