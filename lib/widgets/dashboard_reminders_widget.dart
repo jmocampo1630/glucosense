@@ -119,7 +119,7 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(6),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -129,7 +129,7 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
               children: [
                 Icon(
                   Icons.notifications_rounded,
-                  color: Colors.blue[600],
+                  color: Theme.of(context).colorScheme.primary,
                   size: 22,
                 ),
                 const SizedBox(width: 8),
@@ -146,7 +146,7 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
                   onPressed: _showAddReminderDialog,
                   icon: Icon(
                     Icons.add_rounded,
-                    color: Colors.blue[600],
+                    color: Theme.of(context).colorScheme.primary,
                     size: 22,
                   ),
                   tooltip: 'Add Reminder',
@@ -206,7 +206,7 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: const Text('Add Reminder'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[600],
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
@@ -254,7 +254,9 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
               reminder.isEnabled
                   ? Icons.notifications_rounded
                   : Icons.notifications_off_rounded,
-              color: reminder.isEnabled ? Colors.blue[600] : Colors.grey[400],
+              color: reminder.isEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey[400],
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -303,7 +305,7 @@ class _DashboardRemindersWidgetState extends State<DashboardRemindersWidget> {
               child: Switch(
                 value: reminder.isEnabled,
                 onChanged: (_) => _toggleReminder(reminder),
-                activeColor: Colors.blue[600],
+                activeColor: Theme.of(context).colorScheme.primary,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
