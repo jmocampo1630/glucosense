@@ -9,7 +9,6 @@ import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/achievements_page.dart';
-import 'package:glucolook/widgets/achievement_widgets.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'dashboard_page.dart';
@@ -166,14 +165,6 @@ class _MainNavPageState extends State<MainNavPage> {
 
         // Refresh patient data to update both Dashboard and PatientRecord pages
         await loadPatient();
-
-        // Check for new achievements
-        final newAchievements = await patientDatabaseServices
-            .checkForNewAchievements(widget.patientId);
-        if (newAchievements.isNotEmpty && mounted) {
-          // Show achievement dialog for the first new achievement
-          AchievementUnlockedDialog.show(context, newAchievements.first);
-        }
 
         showToastWarning("Scan successful!", ToastType.success);
       }

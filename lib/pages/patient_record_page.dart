@@ -16,6 +16,7 @@ import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
 import 'package:glucolook/services/pdf_export.services.dart';
+import 'package:glucolook/services/achievement.service.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:glucolook/services/glucose_record.services.dart';
@@ -51,6 +52,7 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
 
   GlucoseRecordServices glucoseRecordDatabaseServices = GlucoseRecordServices();
   PatientDatabaseServices patientDatabaseServices = PatientDatabaseServices();
+  AchievementService achievementService = AchievementService();
 
   Timer? _highlightTimer;
 
@@ -423,6 +425,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
       );
 
       final fileName = pdfResult['filename'];
+
+      // Track export for achievements
+      await achievementService.incrementExportCount(widget.patient!.id);
 
       // Show success message
       showToastWarning(

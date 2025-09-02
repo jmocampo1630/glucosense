@@ -3,10 +3,13 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/models/achievement.model.dart';
+import 'package:glucolook/services/achievement.service.dart';
 
 class PatientDatabaseServices {
   final DatabaseReference _patientsRef =
       FirebaseDatabase.instance.ref().child('patients');
+  final AchievementService _achievementService = AchievementService();
 
   Future<String?> addPatient(Patient patient) async {
     try {
@@ -123,11 +126,35 @@ class PatientDatabaseServices {
       // Update the patient's glucose records with the new record
       await patientReference.update({'glucose_records': glucoseRecords});
 
+      // Update achievements after adding glucose record
+      final updatedPatient = await getPatientById(patientId);
+      if (updatedPatient != null) {
+        await _achievementService.updateStatsAndCheckAchievements(
+            patientId, updatedPatient);
+      }
+
       // Return the ID of the new glucose record
       return glucoseRecordId;
     } catch (e) {
       print('Error adding glucose record to patient: $e');
       return null; // Return null in case of error
+    }
+  }
+
+  // Get newly unlocked achievements for a patient
+  Future<List<Achievement>> checkForNewAchievements(String patientId) async {
+    try {
+      final patient = await getPatientById(patientId);
+      if (patient != null) {
+        return await _achievementService.updateStatsAndCheckAchievements(
+            patientId, patient);
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking for new achievements: $e');
+      }
+      return [];
     }
   }
 }
