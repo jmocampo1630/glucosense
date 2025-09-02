@@ -7,9 +7,13 @@ import 'package:glucolook/modals/scan_glucose_record_modal.dart';
 import 'package:glucolook/modals/submit_cancel_dialog.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/models/achievement.model.dart';
+import 'package:glucolook/models/badge.model.dart' as BadgeModel;
 import 'package:glucolook/pages/camera_page.dart';
 import 'package:glucolook/pages/achievements_page.dart';
+import 'package:glucolook/pages/badges_page.dart';
 import 'package:glucolook/widgets/achievement_widgets.dart';
+import 'package:glucolook/widgets/badge_widgets.dart';
 import 'package:glucolook/services/color_generator.services.dart';
 import 'package:glucolook/services/error.services.dart';
 import 'dashboard_page.dart';
@@ -87,6 +91,9 @@ class _MainNavPageState extends State<MainNavPage> {
       AchievementsPage(
         patientId: widget.patientId,
       ),
+      BadgesPage(
+        patientId: widget.patientId,
+      ),
     ];
 
     return Scaffold(
@@ -119,6 +126,10 @@ class _MainNavPageState extends State<MainNavPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events),
             label: 'Achievements',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.military_tech),
+            label: 'Badges',
           ),
         ],
       ),
@@ -167,12 +178,26 @@ class _MainNavPageState extends State<MainNavPage> {
         // Refresh patient data to update both Dashboard and PatientRecord pages
         await loadPatient();
 
-        // Check for new achievements
-        final newAchievements = await patientDatabaseServices
-            .checkForNewAchievements(widget.patientId);
-        if (newAchievements.isNotEmpty && mounted) {
-          // Show achievement dialog for the first new achievement
-          AchievementUnlockedDialog.show(context, newAchievements.first);
+        // Check for new achievements and badges
+        final result = await patientDatabaseServices
+            .checkForNewAchievementsAndBadges(widget.patientId);
+        final newAchievements = result['achievements'] as List<Achievement>;
+        final newBadges = result['badges'] as List<BadgeModel.Badge>;
+
+        if (mounted) {
+          // Show achievement dialog first if any
+          if (newAchievements.isNotEmpty) {
+            AchievementUnlockedDialog.show(context, newAchievements.first);
+          }
+
+          // Show badge dialog after a short delay if any badges were earned
+          if (newBadges.isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted) {
+                BadgeUnlockedDialog.show(context, newBadges.first);
+              }
+            });
+          }
         }
 
         showToastWarning("Scan successful!", ToastType.success);

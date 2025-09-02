@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/models/achievement.model.dart';
+import 'package:glucolook/models/badge.model.dart' as BadgeModel;
 import 'package:glucolook/services/achievement.service.dart';
 
 class PatientDatabaseServices {
@@ -155,6 +156,37 @@ class PatientDatabaseServices {
         print('Error checking for new achievements: $e');
       }
       return [];
+    }
+  }
+
+  // Get newly unlocked achievements and badges for a patient
+  Future<Map<String, dynamic>> checkForNewAchievementsAndBadges(
+      String patientId) async {
+    try {
+      final patient = await getPatientById(patientId);
+      if (patient != null) {
+        List<Achievement> newAchievements = await _achievementService
+            .updateStatsAndCheckAchievements(patientId, patient);
+        List<BadgeModel.Badge> newBadges = await _achievementService
+            .getNewlyUnlockedBadges(patientId, newAchievements);
+
+        return {
+          'achievements': newAchievements,
+          'badges': newBadges,
+        };
+      }
+      return {
+        'achievements': <Achievement>[],
+        'badges': <BadgeModel.Badge>[],
+      };
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking for new achievements and badges: $e');
+      }
+      return {
+        'achievements': <Achievement>[],
+        'badges': <BadgeModel.Badge>[],
+      };
     }
   }
 }

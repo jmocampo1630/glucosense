@@ -5,9 +5,12 @@ import 'package:glucolook/models/achievement.model.dart';
 import 'package:glucolook/models/achievement_stats.model.dart';
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
+import 'package:glucolook/models/badge.model.dart' as BadgeModel;
+import 'package:glucolook/services/badge.service.dart';
 
 class AchievementService {
   final DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
+  final BadgeService _badgeService = BadgeService();
 
   // Default achievements data
   static const String _defaultAchievementsJson = '''
@@ -366,6 +369,10 @@ class AchievementService {
               .child('patients/$patientId/achievements/${achievement.id}')
               .set(unlockedAchievement.toJson());
 
+          // Also unlock the corresponding badge
+          await _badgeService.unlockBadgeForAchievement(
+              patientId, achievement.id);
+
           newlyUnlocked.add(unlockedAchievement);
         }
       }
@@ -406,5 +413,21 @@ class AchievementService {
 
     double progress = currentValue / targetValue;
     return progress > 1.0 ? 1.0 : progress;
+  }
+
+  // Get newly unlocked badges for achievements
+  Future<List<BadgeModel.Badge>> getNewlyUnlockedBadges(
+      String patientId, List<Achievement> newlyUnlockedAchievements) async {
+    List<BadgeModel.Badge> newBadges = [];
+
+    for (var achievement in newlyUnlockedAchievements) {
+      BadgeModel.Badge? badge = await _badgeService.unlockBadgeForAchievement(
+          patientId, achievement.id);
+      if (badge != null) {
+        newBadges.add(badge);
+      }
+    }
+
+    return newBadges;
   }
 }
