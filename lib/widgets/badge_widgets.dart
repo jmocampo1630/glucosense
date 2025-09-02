@@ -199,7 +199,7 @@ class BadgeCard extends StatelessWidget {
   }
 }
 
-class BadgeUnlockedDialog extends StatelessWidget {
+class BadgeUnlockedDialog extends StatefulWidget {
   final BadgeModel.Badge badge;
 
   const BadgeUnlockedDialog({
@@ -208,129 +208,237 @@ class BadgeUnlockedDialog extends StatelessWidget {
   });
 
   @override
+  State<BadgeUnlockedDialog> createState() => _BadgeUnlockedDialogState();
+}
+
+class _BadgeUnlockedDialogState extends State<BadgeUnlockedDialog>
+    with TickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late AnimationController _rotationController;
+  late AnimationController _fadeController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize controllers
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    // Initialize animations
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.elasticOut,
+    ));
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _rotationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
+    ));
+
+    // Start animations
+    _fadeController.forward();
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _scaleController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      _rotationController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _rotationController.dispose();
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              badge.backgroundColor.withOpacity(0.1),
-              badge.backgroundColor.withOpacity(0.05),
-            ],
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Badge earned animation
-            Container(
-              width: 100,
-              height: 100,
+    return AnimatedBuilder(
+      animation: Listenable.merge(
+          [_scaleController, _fadeController, _rotationController]),
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: badge.backgroundColor,
-                border: Border.all(
-                  color: badge.borderColor,
-                  width: 4,
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    widget.badge.backgroundColor.withOpacity(0.1),
+                    widget.badge.backgroundColor.withOpacity(0.05),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: badge.getRarityColor().withOpacity(0.4),
-                    blurRadius: 20,
-                    spreadRadius: 3,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Badge earned animation with scale and rotation
+                  ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: RotationTransition(
+                      turns: _rotationAnimation,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: widget.badge.backgroundColor,
+                          border: Border.all(
+                            color: widget.badge.borderColor,
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.badge
+                                  .getRarityColor()
+                                  .withOpacity(0.4),
+                              blurRadius: 20,
+                              spreadRadius: 3,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.badge.iconPath,
+                            style: const TextStyle(fontSize: 50),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Badge unlocked text
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'Badge Earned!',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: widget.badge.getRarityColor(),
+                              ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Rarity indicator
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: widget.badge.getRarityColor().withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.badge.getRarityColor(),
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        '${widget.badge.getRarityLabel()} Badge',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: widget.badge.getRarityColor(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Badge name
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      widget.badge.name,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Badge description
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      widget.badge.description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Close button
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: widget.badge.getRarityColor(),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Awesome!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Center(
-                child: Text(
-                  badge.iconPath,
-                  style: const TextStyle(fontSize: 50),
-                ),
-              ),
             ),
-            const SizedBox(height: 20),
-            // Badge unlocked text
-            Text(
-              'Badge Earned!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: badge.getRarityColor(),
-                  ),
-            ),
-            const SizedBox(height: 8),
-            // Rarity indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: badge.getRarityColor().withOpacity(0.2),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: badge.getRarityColor(),
-                  width: 2,
-                ),
-              ),
-              child: Text(
-                '${badge.getRarityLabel()} Badge',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: badge.getRarityColor(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Badge name
-            Text(
-              badge.name,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            // Badge description
-            Text(
-              badge.description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            // Close button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: badge.getRarityColor(),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Awesome!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -341,6 +449,15 @@ class BadgeUnlockedDialog extends StatelessWidget {
       builder: (context) => BadgeUnlockedDialog(badge: badge),
     );
   }
+}
+
+// Standalone function to show badge unlock dialog
+void showBadgeUnlockedDialog(BuildContext context, BadgeModel.Badge badge) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => BadgeUnlockedDialog(badge: badge),
+  );
 }
 
 class BadgeNotificationWidget extends StatefulWidget {

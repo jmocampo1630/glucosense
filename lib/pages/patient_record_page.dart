@@ -7,6 +7,8 @@ import 'package:glucolook/enums/toast_type.dart';
 import 'package:glucolook/modals/pdf_export_modal.dart';
 import 'package:glucolook/modals/scan_glucose_record_modal.dart';
 import 'package:glucolook/modals/submit_cancel_dialog.dart';
+import 'package:glucolook/models/achievement.model.dart';
+import 'package:glucolook/models/badge.model.dart' as BadgeModel;
 import 'package:glucolook/models/glucose_record.model.dart';
 import 'package:glucolook/models/patient.model.dart';
 import 'package:glucolook/pages/camera_page.dart';
@@ -17,6 +19,8 @@ import 'package:glucolook/services/error.services.dart';
 import 'package:glucolook/services/patient.services.dart';
 import 'package:glucolook/services/pdf_export.services.dart';
 import 'package:glucolook/services/achievement.service.dart';
+import 'package:glucolook/widgets/achievement_widgets.dart';
+import 'package:glucolook/widgets/badge_widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:glucolook/services/glucose_record.services.dart';
@@ -268,14 +272,22 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
                                         child: Text('Delete'),
                                       ),
                                     ],
-                                    onSelected: (String value) {
+                                    onSelected: (String value) async {
                                       if (value == 'delete') {
-                                        glucoseRecordDatabaseServices
+                                        await glucoseRecordDatabaseServices
                                             .deleteGlucoseRecord(
                                                 widget.patientId, record.id);
                                         setState(() {
                                           items.remove(record);
                                         });
+
+                                        // Call the refresh callback to update parent data
+                                        if (widget.onRecordsChanged != null) {
+                                          await widget.onRecordsChanged!();
+                                        }
+
+                                        // Check for new achievements and badges after deletion
+                                        await _checkForNewAchievementsAndBadges();
                                       }
                                     },
                                     padding: EdgeInsets.zero,
@@ -347,6 +359,9 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         if (widget.onRecordsChanged != null) {
           await widget.onRecordsChanged!();
         }
+
+        // Check for new achievements and badges
+        await _checkForNewAchievementsAndBadges();
       }
     } else {
       showDialog(
@@ -426,8 +441,28 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
 
       final fileName = pdfResult['filename'];
 
-      // Track export for achievements
-      await achievementService.incrementExportCount(widget.patient!.id);
+      // Track export for achievements and get newly unlocked ones
+      final result =
+          await achievementService.incrementExportCount(widget.patient!.id);
+      final newAchievements = result['achievements'] as List<Achievement>;
+      final newBadges = result['badges'] as List<BadgeModel.Badge>;
+
+      // Show achievement and badge dialogs if any were unlocked
+      if (mounted) {
+        // Show achievement dialog first if any
+        if (newAchievements.isNotEmpty) {
+          AchievementUnlockedDialog.show(context, newAchievements.first);
+        }
+
+        // Show badge dialog after a short delay if any badges were earned
+        if (newBadges.isNotEmpty) {
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (mounted) {
+              showBadgeUnlockedDialog(context, newBadges.first);
+            }
+          });
+        }
+      }
 
       // Show success message
       showToastWarning(
@@ -439,6 +474,42 @@ class _PatientRecordPageState extends State<PatientRecordPage> {
         "Failed to export PDF: ${e.toString()}",
         ToastType.error,
       );
+    }
+  }
+
+  // Check for new achievements and badges
+  Future<void> _checkForNewAchievementsAndBadges() async {
+    try {
+      if (widget.patient != null) {
+        final result = await patientDatabaseServices
+            .checkForNewAchievementsAndBadges(widget.patient!.id);
+        final newAchievements = result['achievements'] as List<Achievement>;
+        final newBadges = result['badges'] as List<BadgeModel.Badge>;
+
+        if (mounted) {
+          // Show achievement dialog first if any
+          if (newAchievements.isNotEmpty) {
+            AchievementUnlockedDialog.show(context, newAchievements.first);
+          }
+
+          // Show badge dialog after a short delay if any badges were earned
+          if (newBadges.isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted) {
+                showBadgeUnlockedDialog(context, newBadges.first);
+              }
+            });
+          }
+        }
+      }
+    } catch (e) {
+      // Silently handle any errors
+      if (mounted) {
+        showToastWarning(
+          "Error checking achievements: ${e.toString()}",
+          ToastType.error,
+        );
+      }
     }
   }
 

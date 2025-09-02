@@ -381,8 +381,8 @@ class AchievementService {
     return newlyUnlocked;
   }
 
-  // Increment export count
-  Future<void> incrementExportCount(String patientId) async {
+  // Increment export count and return newly unlocked achievements and badges
+  Future<Map<String, dynamic>> incrementExportCount(String patientId) async {
     try {
       AchievementStats currentStats = await getAchievementStats(patientId);
       AchievementStats updatedStats = currentStats.copyWith(
@@ -394,11 +394,25 @@ class AchievementService {
           .set(updatedStats.toJson());
 
       // Check for newly unlocked achievements
-      await _checkAndUnlockAchievements(patientId, updatedStats);
+      List<Achievement> newlyUnlocked =
+          await _checkAndUnlockAchievements(patientId, updatedStats);
+
+      // Get newly unlocked badges for achievements
+      List<BadgeModel.Badge> newBadges =
+          await getNewlyUnlockedBadges(patientId, newlyUnlocked);
+
+      return {
+        'achievements': newlyUnlocked,
+        'badges': newBadges,
+      };
     } catch (e) {
       if (kDebugMode) {
         print('Error incrementing export count: $e');
       }
+      return {
+        'achievements': <Achievement>[],
+        'badges': <BadgeModel.Badge>[],
+      };
     }
   }
 

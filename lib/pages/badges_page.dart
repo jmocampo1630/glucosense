@@ -268,7 +268,7 @@ class _BadgesPageState extends State<BadgesPage> with TickerProviderStateMixin {
           badge: badge,
           onTap: () {
             if (badge.isUnlocked) {
-              BadgeUnlockedDialog.show(context, badge);
+              showBadgeUnlockedDialog(context, badge);
             }
           },
         );
@@ -315,7 +315,7 @@ class _BadgesPageState extends State<BadgesPage> with TickerProviderStateMixin {
                 return GestureDetector(
                   onTap: () {
                     if (badge.isUnlocked) {
-                      BadgeUnlockedDialog.show(context, badge);
+                      showBadgeUnlockedDialog(context, badge);
                     }
                   },
                   child: Column(
@@ -398,7 +398,7 @@ class _BadgesPageState extends State<BadgesPage> with TickerProviderStateMixin {
                 return GestureDetector(
                   onTap: () {
                     if (badge.isUnlocked) {
-                      BadgeUnlockedDialog.show(context, badge);
+                      showBadgeUnlockedDialog(context, badge);
                     }
                   },
                   child: Column(

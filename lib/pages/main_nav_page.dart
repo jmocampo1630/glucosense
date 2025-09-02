@@ -194,7 +194,7 @@ class _MainNavPageState extends State<MainNavPage> {
           if (newBadges.isNotEmpty) {
             Future.delayed(const Duration(milliseconds: 1500), () {
               if (mounted) {
-                BadgeUnlockedDialog.show(context, newBadges.first);
+                showBadgeUnlockedDialog(context, newBadges.first);
               }
             });
           }
